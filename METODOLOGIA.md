@@ -139,6 +139,20 @@ Para mostrar a alocação no mapa, o valor de cada grupo e política é repartid
 
 Para 2022 e 2026, 1º e 2º turnos: percentual de Lula e do principal adversário (Jair Bolsonaro em 2022, Flávio Bolsonaro em 2026) nos votos válidos de cada município, vencedor e abstenção. As somas dos municípios conferem com os totais do TSE (2º turno de 2026: Lula 51,78%, Flávio Bolsonaro 48,22%, sem votos do exterior).
 
+### Análise eleitoral no painel
+
+O painel cruza o voto com as necessidades em todas as abas:
+
+- **Mapa e visão geral:** dispersão entre o índice de prioridade (TOPSIS) e o % de Lula no 2º turno de 2026, com a correlação e o voto no quinto menos e no mais prioritário.
+- **Perfis:** voto, variação 2022→2026, abstenção e municípios que mudaram de vencedor em cada perfil.
+- **Ranking:** % de Lula em 2022 e 2026 e vencedor de 2026 em cada município listado.
+- **Simulador:** R$ por habitante alocado aos municípios conforme o vencedor e o quinto de votação de Lula, para mostrar que a diferença vem da necessidade.
+- **Eleições:** correlação de Pearson de 12 indicadores com o % de Lula e com a variação entre 2022 e 2026, voto por quinto de prioridade e variação por perfil.
+
+Os agregados são ponderados pelos votos válidos de cada município. As correlações são entre municípios (ecológicas) e não indicam causa nem o comportamento de cada eleitor.
+
+Principais resultados: correlação de 0,73 entre o TOPSIS e o voto em Lula em 2026; Lula teve 41,0% no quinto menos prioritário e 72,1% no mais prioritário; ganhou 0,9 p.p. no total entre 2022 e 2026, mas caiu em 78% dos municípios (mediana de −2,0 p.p.), com alta nos grandes centros (perfil 2, +1,9 p.p.) e maior queda no interior do Sul, Sudeste e Centro-Oeste (perfil 3, −3,3 p.p.).
+
 As votações **não** entram nos indicadores, no TOPSIS, no k-means nem na alocação. Distribuir recursos pelo resultado eleitoral contrariaria o princípio da impessoalidade (art. 37 da Constituição). No painel, aparecem só como camada descritiva e para cruzamento com os perfis.
 
 ## 8. Limitações

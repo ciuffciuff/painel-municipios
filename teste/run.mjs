@@ -35,7 +35,7 @@ win.dash = {
   resetParams() { params = { var: 'grupo', modo: 'equidade' }; },
   setLink() {},
 };
-for (const f of ['simplex.js', 'lpmodel.js', 'app.js']) win.eval(fs.readFileSync(W + f, 'utf8'));
+for (const f of ['simplex.js', 'lpmodel.js', 'app.js', 'eleicoes.js']) win.eval(fs.readFileSync(W + f, 'utf8'));
 function runAll(label) {
   onData.forEach((f) => f());
   const errs = [];

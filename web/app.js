@@ -412,6 +412,11 @@
   });
 
   // ---------- perfis ----------
+  function eleicaoPerfil(g) {
+    var r = rows('eleicao_perfil'); var e = r && r.find(function (z) { return z.grupo === g; }); if (!e) return null;
+    var v = e.variacao, sv = (v > 0 ? '+' : v < 0 ? '−' : '') + F.d1(Math.abs(v));
+    return h('p', { class: 'muted', style: 'margin-top:var(--cds-gap-sm)', text: 'Eleição presidencial, 2º turno: Lula teve ' + F.d1(e.lula_22_2t) + '% em 2022 e ' + F.d1(e.lula_26_2t) + '% em 2026 (' + sv + ' p.p.) e venceu em ' + F.d1(e.pct_mun_lula_26) + '% dos municípios do perfil. ' + F.i(e.viraram_flavio) + ' municípios passaram para Flávio Bolsonaro e ' + F.i(e.viraram_lula) + ' para Lula.' });
+  }
   dash.draw('perfis-cards', function (el) {
     var pf = rows('perfis'); if (!pf) return dashEl(el);
     el.replaceChildren();
@@ -430,7 +435,8 @@
         h('p', { text: p.descricao }),
         h('h3', { text: 'Necessidade média (0–100)' }), needs,
         h('h3', { text: 'Distribuição por região', style: 'margin-top:var(--cds-gap-sm)' }), comp, h('p', { class: 'muted', text: compTxt.join(' · ') }),
-        h('div', { class: 'policy' }, [h('h3', { text: 'Políticas sugeridas' }), h('p', { text: p.politicas_sugeridas, style: 'margin:0' })])
+        h('div', { class: 'policy' }, [h('h3', { text: 'Políticas sugeridas' }), h('p', { text: p.politicas_sugeridas, style: 'margin:0' })]),
+        eleicaoPerfil(p.grupo)
       ]));
     });
   });
@@ -452,11 +458,13 @@
     var list = mun.filter(function (m) { return (!P.uf || m.uf === P.uf) && (P.rgrupo == null || m.grupo === Number(P.rgrupo)); })
       .sort(function (a, b) { return a.rank_topsis - b.rank_topsis; }).slice(0, 300);
     list.forEach(function (m) {
+      var venc = m.venc_26_2t === 'Flávio Bolsonaro' ? 'F. Bolsonaro' : m.venc_26_2t;
       var tr = h('tr', { 'data-key': String(m.cod), style: 'cursor:pointer' }, [
         h('td', { class: 'n', text: F.i(m.rank_topsis) }), h('td', { text: m.nome }), h('td', { text: m.uf }),
         h('td', { class: 'n' }, [h('span', { class: 'sw', style: 'background:' + col(m.grupo - 1) }), String(m.grupo)]),
         h('td', { class: 'n', text: F.d1(m.topsis) }), h('td', { class: 'n', text: F.d1(m.nec_saude) }), h('td', { class: 'n', text: F.d1(m.nec_educacao) }),
-        h('td', { class: 'n', text: F.d1(m.nec_saneamento) }), h('td', { class: 'n', text: F.d1(m.nec_renda) }), h('td', { class: 'n', text: F.i(m.pop2025) })
+        h('td', { class: 'n', text: F.d1(m.nec_saneamento) }), h('td', { class: 'n', text: F.d1(m.nec_renda) }), h('td', { class: 'n', text: F.i(m.pop2025) }),
+        h('td', { class: 'n', text: F.d1(m.lula_22_2t) }), h('td', { class: 'n', text: F.d1(m.lula_26_2t) }), h('td', { text: venc })
       ]);
       tr.addEventListener('click', function () { dash.setParams({ mun: m.cod }); showTab('visao'); dash.setLink('visao'); });
       el.appendChild(tr);
@@ -569,6 +577,8 @@
     });
     t.appendChild(tb); el.replaceChildren(t);
   });
+
+  window.PM = { rows: rows, F: F, col: col, h: h, dashEl: dashEl, tipPos: tipPos, groupedBars: groupedBars, sim: sim, alocMunicipal: alocMunicipal };
 
   // ---------- método ----------
   dash.draw('selk', function (el) {

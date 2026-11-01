@@ -55,11 +55,12 @@ html = f"""<!DOCTYPE html>
 <script src="simplex.js"></script>
 <script src="lpmodel.js"></script>
 <script src="app.js"></script>
+<script src="eleicoes.js"></script>
 </body>
 </html>
 """
 open(os.path.join(docs, 'index.html'), 'w', encoding='utf-8').write(html)
-for f in ['app.js', 'lpmodel.js', 'simplex.js']:
+for f in ['app.js', 'eleicoes.js', 'lpmodel.js', 'simplex.js']:
     shutil.copy(os.path.join(web, f), docs)
 os.makedirs(os.path.join(docs, 'dados'), exist_ok=True)
 for f in ['municipios.csv', 'perfis.csv', 'grupos.csv', 'parametros_politicas.csv', 'parametros_gerais.csv',
