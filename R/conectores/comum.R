@@ -77,7 +77,8 @@ http_verificar <- function(urls, pausa = 0.3) {
       url           = u,
       status        = r$status,
       tamanho_bytes = if (!is.null(h[["content-length"]])) as.numeric(h[["content-length"]]) else NA_real_,
-      modificado_em = if (!is.null(h[["last-modified"]])) h[["last-modified"]] else NA_character_
+      modificado_em = if (!is.null(h[["last-modified"]])) h[["last-modified"]] else NA_character_,
+      erro          = if (is.na(r$status)) substr(r$texto, 1, 200) else ""
     )
   })
   do.call(rbind, linhas)

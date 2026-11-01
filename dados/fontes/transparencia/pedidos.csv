@@ -5,3 +5,4 @@ despesas_orgao_mec_2025,/api-de-dados/despesas/por-orgao,ano=2025&orgaoSuperior=
 despesas_orgao_saude_2025,/api-de-dados/despesas/por-orgao,ano=2025&orgaoSuperior=36000,FALSE,
 bolsa_familia_202608,/api-de-dados/novo-bolsa-familia-por-municipio,mesAno=202608,TRUE,codigoIbge
 bpc_202608,/api-de-dados/bpc-por-municipio,mesAno=202608,TRUE,codigoIbge
+#recursos_recebidos_2025,/api-de-dados/despesas/recursos-recebidos,mesAnoInicio=01/2025&mesAnoFim=12/2025,TRUE,codigoIBGE
