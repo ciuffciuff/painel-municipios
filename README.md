@@ -2,7 +2,9 @@
 
 Necessidades dos 5.570 municípios brasileiros (Censo 2022) em saúde, educação, saneamento e renda, agrupadas por machine learning e usadas num modelo de pesquisa operacional para indicar a alocação de políticas públicas. Os resultados das eleições presidenciais de 2022 e 2026 entram como camada descritiva.
 
-Painel interativo: https://claude.ai/artifact/NZXKJNrt81eyJ74HZFFDJA
+Painel interativo:
+- GitHub Pages: https://ciuffciuff.github.io/painel-municipios/ (pasta `docs/`)
+- Claude: https://claude.ai/artifact/NZXKJNrt81eyJ74HZFFDJA
 
 ## O que o projeto faz
 
@@ -30,10 +32,18 @@ Painel interativo: https://claude.ai/artifact/NZXKJNrt81eyJ74HZFFDJA
 | `R/` | `painel_municipios.R`: necessidade, TOPSIS, k-means e programação linear (`lpSolve`), comentado para iniciantes. Usa `dados/municipios.csv`. |
 | `python/` | Pipeline que gerou os dados: `build_data.py` (junta as fontes), `model.py` (necessidade, TOPSIS, k-means), `lp.py` (programação linear com SciPy/HiGHS), `geo.py` (malha SVG), `out_build.py` (arquivos finais), `decode_rais.py` (RAIS por município). |
 | `dados/` | Base final por município, perfis, grupos do modelo, parâmetros, solução de referência e malhas. |
-| `web/` | Código do painel (HTML/JS, simplex em JavaScript). Roda dentro do painel do Claude, que fornece a API `dash`; não é uma página independente. |
+| `web/` | Código-fonte do painel (HTML/JS, simplex em JavaScript), escrito para a API `dash` do painel do Claude. |
+| `docs/` | Versão independente do painel, publicada no GitHub Pages. `dash-shim.js` substitui a API `dash`; `montar.py` regenera a pasta a partir de `web/` e `dados/` (`python docs/montar.py`). |
 | `teste/` | Teste do painel num DOM simulado (`node teste/run.mjs`, requer `jsdom`, `d3` e `papaparse`). |
 
 Documentos: [METODOLOGIA.md](METODOLOGIA.md) (fórmulas e escolhas de cada etapa) e [FONTES.md](FONTES.md) (origem de cada dado e conferências).
+
+## Ver o painel no seu computador
+
+```bash
+cd docs
+python -m http.server 8000     # abra http://localhost:8000
+```
 
 ## Como rodar em R
 

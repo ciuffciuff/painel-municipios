@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel de Municípios</title>
+<meta name="description" content="Necessidades dos 5.570 municípios brasileiros, perfis por k-means, prioridade por TOPSIS e alocação de orçamento por programação linear.">
+<style>
+:root {
+  --font-anthropic-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-anthropic-serif: Georgia, "Times New Roman", serif;
+  --color-fg: #1f2328; --color-fg-muted: #5f6b7a; --color-bg: #ffffff; --color-panel: #f7f8fa;
+  --color-border-line: #dde1e6; --color-ok: #14876f; --color-warn: #b7791f; --color-bad: #c8382f;
+  --cds-font-size-caption: 0.8rem; --cds-font-size-body: 0.95rem; --cds-font-size-heading: 1.1rem; --cds-font-size-title: 1.75rem;
+  --cds-font-weight-medium: 600;
+  --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 16px; --cds-gap-lg: 24px; --cds-gap-xl: 32px;
+  --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-md: 12px; --cds-pad-lg: 18px; --cds-pad-xl: 28px;
+  --cds-radius: 8px; --cds-dur-slow: 300ms;
+  --cds-chart-muted: #d5dae0; --cds-chart-grid: #e6e9ed; --cds-chart-axis: #9aa5b1; --cds-chart-reference: #7b8794;
+  --cds-surface-popover: #ffffff; --cds-border: #dde1e6; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.12); --cds-text-secondary: #5f6b7a;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-fg: #e6e8eb; --color-fg-muted: #a0a9b4; --color-bg: #15181c; --color-panel: #1d2126;
+    --color-border-line: #333a42; --color-ok: #5cc8a3; --color-warn: #e0b45a; --color-bad: #ef6f6c;
+    --cds-chart-muted: #3a424b; --cds-chart-grid: #2b3138; --cds-chart-axis: #6b7682; --cds-chart-reference: #8a95a1;
+    --cds-surface-popover: #22272d; --cds-border: #3a424b; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.5); --cds-text-secondary: #a0a9b4;
+  }
+}
+html, body { margin: 0; background: var(--color-bg); color: var(--color-fg); }
+#dash-root { padding: var(--dash-gutter, 24px); }
+.pm .rodape { margin-top: var(--cds-gap-lg); padding-top: var(--cds-gap-md); border-top: 1px solid var(--color-border-line); }
+.pm .rodape a { color: inherit; }
+.pm svg text[fill^="var("] { fill: currentColor; }
+</style>
+</head>
+<body>
+<div id="dash-root">
+<style>
+#dash-root { --dash-gutter: clamp(12px, 3vw, 32px); }
+.pm { font-family: var(--font-anthropic-sans); color: var(--color-fg); max-width: 1400px; margin-inline: auto; }
+.pm h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0 0 var(--cds-gap-xs); }
+.pm h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0 0 var(--cds-gap-xs); }
+.pm h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0 0 var(--cds-gap-xs); }
+.pm p { margin: 0 0 var(--cds-gap-sm); line-height: 1.5; }
+.pm .muted { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.pm .lede { color: var(--color-fg-muted); max-width: 70ch; }
+.pm .tabs { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); border-bottom: 1px solid var(--color-border-line); margin: var(--cds-gap-md) 0 var(--cds-gap-md); }
+.pm .tabs button { font: inherit; font-size: var(--cds-font-size-body); background: none; border: 0; border-bottom: 2px solid transparent; color: var(--color-fg-muted); padding: var(--cds-pad-sm) var(--cds-pad-md); cursor: pointer; }
+.pm .tabs button[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); }
+.pm .grid { display: grid; gap: var(--cds-gap-md); grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); }
+.pm .grid-map { display: grid; gap: var(--cds-gap-md); grid-template-columns: minmax(0, 2fr) minmax(min(100%, 20rem), 1fr); }
+@media (max-width: 860px) { .pm .grid-map { grid-template-columns: 1fr; } }
+.pm .card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; }
+.pm .kpis { display: grid; gap: var(--cds-gap-md); grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); margin-bottom: var(--cds-gap-md); }
+.pm .kpi .v { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.2; }
+.pm .kpi .l { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.pm .controls { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-md); align-items: end; margin-bottom: var(--cds-gap-md); }
+.pm label.ctl { display: flex; flex-direction: column; gap: 2px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.pm select, .pm input[type="search"], .pm input[type="text"] { font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); min-width: 12rem; }
+.pm button.btn { font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); cursor: pointer; }
+.pm .mapbox { position: relative; min-height: 420px; }
+.pm .mapbox svg { display: block; width: 100%; height: auto; }
+.pm .mapbox path.m { stroke: none; cursor: pointer; }
+.pm .mapbox path.m.sel { stroke: var(--color-fg); stroke-width: 1.6; }
+.pm .mapbox path.u { fill: none; stroke: var(--color-bg); stroke-width: 0.9; pointer-events: none; }
+.pm .tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); max-width: 16rem; z-index: 2; }
+.pm .tip .k { color: var(--cds-text-secondary); }
+.pm .legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: var(--cds-gap-sm); align-items: center; }
+.pm .sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -2px; margin-right: 4px; }
+.pm table { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.pm th, .pm td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+.pm th { position: sticky; top: 0; background: var(--color-panel); font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); }
+.pm td.n, .pm th.n { text-align: right; }
+.pm .scroll { max-height: 34rem; overflow: auto; }
+.pm .bar { height: 8px; border-radius: 2px; background: var(--cds-chart-muted); }
+.pm .barfill { height: 8px; border-radius: 2px; }
+.pm .dimrow { display: grid; grid-template-columns: 7.5rem 1fr 2.5rem; gap: var(--cds-gap-xs); align-items: center; font-size: var(--cds-font-size-caption); margin-bottom: 4px; }
+.pm .perfil-head { display: flex; gap: var(--cds-gap-sm); align-items: baseline; margin-bottom: var(--cds-gap-xs); }
+.pm .chip { display: inline-block; width: 14px; height: 14px; border-radius: 3px; flex: none; transform: translateY(2px); }
+.pm .policy { border-left: 3px solid var(--color-border-line); padding-left: var(--cds-pad-sm); margin-top: var(--cds-gap-sm); }
+.pm .sliders { display: grid; gap: var(--cds-gap-sm) var(--cds-gap-lg); grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
+.pm .sliders label { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.pm .sliders input[type="range"] { grid-column: 1 / -1; width: 100%; }
+.pm .sliders b { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; }
+.pm .radio { display: flex; gap: var(--cds-gap-md); flex-wrap: wrap; font-size: var(--cds-font-size-body); }
+.pm .note { border-left: 3px solid var(--color-warn); padding: var(--cds-pad-xs) var(--cds-pad-sm); color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); margin: var(--cds-gap-sm) 0; }
+.pm .chart { min-height: 260px; position: relative; }
+.pm .chart svg { display: block; }
+.pm .det dl { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--cds-gap-sm); margin: 0; font-size: var(--cds-font-size-caption); }
+.pm .det dt { color: var(--color-fg-muted); }
+.pm .det dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.pm .det h4 { margin: var(--cds-gap-sm) 0 4px; font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); }
+.pm section > .card + .card, .pm section > .grid + .card, .pm section > .card + .grid { margin-top: var(--cds-gap-md); }
+.pm ol, .pm ul { margin: 0 0 var(--cds-gap-sm); padding-left: 1.2rem; line-height: 1.5; }
+.pm [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.pm [data-dash-source-state=empty] { color: transparent; }
+</style>
+
+<div class="pm">
+  <h1>Painel de Municípios: necessidades e alocação de políticas públicas</h1>
+  <p class="lede">Os 5.570 municípios do Censo 2022, agrupados por perfil de necessidade em saúde, educação, saneamento e renda, com um índice de prioridade (TOPSIS), um simulador de alocação de orçamento por programação linear e os resultados das eleições presidenciais de 2022 e 2026.</p>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="visao" aria-selected="true">Mapa e visão geral</button>
+    <button role="tab" data-tab="perfis" aria-selected="false">Perfis de necessidade</button>
+    <button role="tab" data-tab="ranking" aria-selected="false">Ranking de prioridade</button>
+    <button role="tab" data-tab="simulador" aria-selected="false">Simulador de orçamento</button>
+    <button role="tab" data-tab="eleicoes" aria-selected="false">Eleições 2022 e 2026</button>
+    <button role="tab" data-tab="metodo" aria-selected="false">Método e fontes</button>
+  </div>
+
+  <!-- ================= VISÃO GERAL ================= -->
+  <section id="visao" data-page="visao">
+    <div class="kpis">
+      <div class="card kpi"><div class="v" data-draw="k-mun" data-source="resumo" data-field="municipios">—</div><div class="l">municípios analisados</div></div>
+      <div class="card kpi"><div class="v" data-draw="k-pop" data-source="resumo" data-field="populacao">—</div><div class="l">habitantes (estimativa IBGE 2025)</div></div>
+      <div class="card kpi"><div class="v" data-draw="k-grupos" data-source="resumo" data-field="grupos">—</div><div class="l">perfis de necessidade (k-means)</div></div>
+      <div class="card kpi"><div class="v" data-draw="k-top" data-source="resumo" data-field="mais_prioritario">—</div><div class="l">maior índice de prioridade (TOPSIS)</div></div>
+    </div>
+
+    <div class="grid-map">
+      <div class="card" id="card-mapa">
+        <h2>Mapa municipal</h2>
+        <div class="controls">
+          <label class="ctl">O que mostrar
+            <select class="ctl-var" aria-label="Variável do mapa">
+              <optgroup label="Modelo">
+                <option value="grupo">Perfil de necessidade (k-means)</option>
+                <option value="topsis">Índice de prioridade (TOPSIS, 0–100)</option>
+                <option value="aloc">Alocação simulada (R$ por habitante)</option>
+              </optgroup>
+              <optgroup label="Necessidade por dimensão (0 = melhor, 100 = pior)">
+                <option value="nec_saude">Saúde</option>
+                <option value="nec_educacao">Educação</option>
+                <option value="nec_saneamento">Saneamento</option>
+                <option value="nec_renda">Renda, emprego e assistência</option>
+              </optgroup>
+              <optgroup label="Indicadores">
+                <option value="cob_esf">Cobertura estimada da Saúde da Família (%)</option>
+                <option value="ubs_10k">UBS por 10 mil habitantes</option>
+                <option value="alfab">Taxa de alfabetização, 15 anos ou mais (%)</option>
+                <option value="ideb_ai">IDEB 2025, anos iniciais, rede pública</option>
+                <option value="agua_rede">Domicílios com água da rede geral (%)</option>
+                <option value="esgoto_adeq">Domicílios com esgoto adequado (%)</option>
+                <option value="lixo_coleta">Domicílios com coleta de lixo (%)</option>
+                <option value="renda_pc">Renda domiciliar per capita média (R$)</option>
+                <option value="emprego_1000">Empregos formais privados por mil habitantes</option>
+                <option value="bf_cob">Domicílios no Bolsa Família (%)</option>
+              </optgroup>
+              <optgroup label="Eleições presidenciais (votos válidos)">
+                <option value="venc_22_2t">Vencedor no 2º turno de 2022</option>
+                <option value="venc_26_1t">Vencedor no 1º turno de 2026</option>
+                <option value="venc_26_2t">Vencedor no 2º turno de 2026</option>
+                <option value="lula_22_2t">Lula, 2º turno de 2022 (%)</option>
+                <option value="lula_26_2t">Lula, 2º turno de 2026 (%)</option>
+                <option value="var_lula">Variação de Lula, 2º turno 2022 → 2026 (p.p.)</option>
+                <option value="abst_26_2t">Abstenção no 2º turno de 2026 (%)</option>
+              </optgroup>
+            </select>
+          </label>
+          <label class="ctl">Estado
+            <select class="ctl-uf" aria-label="Estado">
+              <option value="">Brasil</option>
+              <option>AC</option><option>AL</option><option>AM</option><option>AP</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MG</option><option>MS</option><option>MT</option><option>PA</option><option>PB</option><option>PE</option><option>PI</option><option>PR</option><option>RJ</option><option>RN</option><option>RO</option><option>RR</option><option>RS</option><option>SC</option><option>SE</option><option>SP</option><option>TO</option>
+            </select>
+          </label>
+          <label class="ctl">Buscar município
+            <input type="search" class="ctl-busca" list="lista-mun" placeholder="Nome – UF" aria-label="Buscar município">
+          </label>
+          <datalist id="lista-mun" data-draw="lista-mun" data-source="municipios"></datalist>
+        </div>
+        <div class="mapbox" data-draw="mapa" data-source="municipios malha ufs grupos politicas geral perfis">—</div>
+        <div class="legend" data-draw="legenda" data-source="municipios perfis">—</div>
+        <p class="muted">Clique em um município para ver o detalhe. Em "Alocação simulada", os valores seguem os parâmetros da aba Simulador.</p>
+      </div>
+
+      <div class="card det" id="card-detalhe">
+        <h2>Detalhe do município</h2>
+        <p class="muted det-vazio">Clique em um município no mapa, na tabela do ranking ou use a busca.</p>
+        <div class="det-conteudo" hidden><div data-draw="detalhe" data-source="municipios perfis grupos politicas geral">—</div></div>
+      </div>
+    </div>
+
+    <div class="card" id="card-regioes">
+      <h2>Necessidade média por região</h2>
+      <p class="muted">Média ponderada pela população da necessidade em cada dimensão (0 = melhor município do país, 100 = pior).</p>
+      <div class="chart" data-draw="regioes" data-source="dim_regiao">—</div>
+    </div>
+  </section>
+
+  <!-- ================= PERFIS ================= -->
+  <section id="perfis" data-page="perfis" hidden>
+    <p class="lede">O k-means separou os municípios em seis perfis a partir das 11 medidas de necessidade. Os perfis estão numerados do menos ao mais necessitado, pela média do índice TOPSIS. As políticas sugeridas são indicativas e devem ser validadas com as áreas setoriais.</p>
+    <div class="grid" data-draw="perfis-cards" data-source="perfis">—</div>
+    <div class="card" id="card-matriz">
+      <h2>Indicadores típicos de cada perfil (mediana)</h2>
+      <div class="scroll">
+        <table data-source="perfis" data-row-key="grupo">
+          <thead><tr>
+            <th data-field="grupo">Perfil</th>
+            <th class="n" data-field="municipios">Municípios</th>
+            <th class="n" data-field="pop_pct">População (%)</th>
+            <th class="n" data-field="cob_esf">Cobertura SF (%)</th>
+            <th class="n" data-field="ubs_por_10k">UBS/10 mil</th>
+            <th class="n" data-field="alfab">Alfabetização (%)</th>
+            <th class="n" data-field="ideb_ai">IDEB AI</th>
+            <th class="n" data-field="agua_rede">Água rede (%)</th>
+            <th class="n" data-field="esgoto_adeq">Esgoto adeq. (%)</th>
+            <th class="n" data-field="lixo_coleta">Coleta lixo (%)</th>
+            <th class="n" data-field="renda_pc">Renda pc (R$)</th>
+            <th class="n" data-field="emprego_1000">Emprego/mil</th>
+            <th class="n" data-field="bf_cob">Bolsa Família (%)</th>
+          </tr></thead>
+          <tbody data-draw="matriz"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RANKING ================= -->
+  <section id="ranking" data-page="ranking" hidden>
+    <div class="card" id="card-ranking">
+      <h2>Municípios mais prioritários pelo TOPSIS</h2>
+      <p class="muted">O índice mede a proximidade do município à pior situação observada nas 11 medidas (100 = mais prioritário). Pesos iguais por dimensão. Até 300 municípios, filtrados pelo estado e pelo perfil.</p>
+      <div class="controls">
+        <label class="ctl">Estado
+          <select class="ctl-uf" aria-label="Estado">
+            <option value="">Brasil</option>
+            <option>AC</option><option>AL</option><option>AM</option><option>AP</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MG</option><option>MS</option><option>MT</option><option>PA</option><option>PB</option><option>PE</option><option>PI</option><option>PR</option><option>RJ</option><option>RN</option><option>RO</option><option>RR</option><option>RS</option><option>SC</option><option>SE</option><option>SP</option><option>TO</option>
+          </select>
+        </label>
+        <label class="ctl">Perfil
+          <select class="ctl-grupo" aria-label="Perfil">
+            <option value="">Todos</option><option value="1">Perfil 1</option><option value="2">Perfil 2</option><option value="3">Perfil 3</option><option value="4">Perfil 4</option><option value="5">Perfil 5</option><option value="6">Perfil 6</option>
+          </select>
+        </label>
+      </div>
+      <div class="scroll">
+        <table class="tab-ranking" data-source="municipios" data-row-key="cod">
+          <thead><tr>
+            <th class="n" data-field="rank_topsis">Posição</th>
+            <th data-field="nome">Município</th>
+            <th data-field="uf">UF</th>
+            <th class="n" data-field="grupo">Perfil</th>
+            <th class="n" data-field="topsis">TOPSIS</th>
+            <th class="n" data-field="nec_saude">Saúde</th>
+            <th class="n" data-field="nec_educacao">Educação</th>
+            <th class="n" data-field="nec_saneamento">Saneamento</th>
+            <th class="n" data-field="nec_renda">Renda</th>
+            <th class="n" data-field="pop2025">População 2025</th>
+          </tr></thead>
+          <tbody data-draw="ranking"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SIMULADOR ================= -->
+  <section id="simulador" data-page="simulador" hidden>
+    <div class="card" id="card-sim-ctl">
+      <h2>Simulador de alocação de orçamento</h2>
+      <p class="muted">Programação linear resolvida no navegador. O orçamento é distribuído entre 30 grupos (5 regiões × 6 perfis) e 4 políticas, com retornos decrescentes: o primeiro terço do déficit rende 100%, o segundo 70% e o último 40%. Os custos por unidade de déficit são hipóteses para comparar cenários, não estimativas orçamentárias reais.</p>
+      <div class="radio" role="radiogroup" aria-label="Formulação">
+        <label><input type="radio" name="modo" value="equidade"> Equidade: primeiro garantir o maior mínimo para todos (maximin), depois eficiência</label>
+        <label><input type="radio" name="modo" value="eficiencia"> Eficiência: maximizar a redução ponderada do déficit</label>
+      </div>
+      <div class="sliders" style="margin-top: var(--cds-gap-md);">
+        <label>Orçamento total (R$ bilhões) <b data-draw="v-orc" data-source="geral">—</b><input type="range" class="sl" data-p="orc" min="2" max="100" step="1"></label>
+        <label>Piso regional (% da parcela da região no déficit) <b data-draw="v-preg" data-source="geral">—</b><input type="range" class="sl" data-p="preg" min="0" max="100" step="5"></label>
+        <label>Teto de absorção (R$ por habitante no grupo) <b data-draw="v-teto" data-source="geral">—</b><input type="range" class="sl" data-p="teto" min="50" max="1000" step="25"></label>
+        <label>Aversão à desigualdade (0 = nenhuma) <b data-draw="v-eq" data-source="geral">—</b><input type="range" class="sl" data-p="eq" min="0" max="3" step="0.5"></label>
+        <label>Peso de saúde <b data-draw="v-w_saude" data-source="politicas">—</b><input type="range" class="sl" data-p="w_saude" min="0" max="3" step="0.25"></label>
+        <label>Peso de educação <b data-draw="v-w_educacao" data-source="politicas">—</b><input type="range" class="sl" data-p="w_educacao" min="0" max="3" step="0.25"></label>
+        <label>Peso de saneamento <b data-draw="v-w_saneamento" data-source="politicas">—</b><input type="range" class="sl" data-p="w_saneamento" min="0" max="3" step="0.25"></label>
+        <label>Peso de renda, emprego e assistência <b data-draw="v-w_renda" data-source="politicas">—</b><input type="range" class="sl" data-p="w_renda" min="0" max="3" step="0.25"></label>
+      </div>
+      <p class="muted" style="margin-top: var(--cds-gap-sm);">Cada política tem piso de 10% do orçamento. <button class="btn reset-sim">Voltar aos valores padrão</button></p>
+    </div>
+
+    <div class="kpis" style="margin-top: var(--cds-gap-md);">
+      <div class="card kpi"><div class="v" data-draw="s-gasto" data-source="grupos politicas geral">—</div><div class="l">orçamento alocado</div></div>
+      <div class="card kpi"><div class="v" data-draw="s-red" data-source="grupos politicas geral">—</div><div class="l">do déficit total reduzido (pessoas-equivalentes)</div></div>
+      <div class="card kpi"><div class="v" data-draw="s-min" data-source="grupos politicas geral">—</div><div class="l">menor redução entre grupos e políticas</div></div>
+      <div class="card kpi"><div class="v" data-draw="s-marg" data-source="grupos politicas geral">—</div><div class="l">ganho de mais R$ 1 bilhão (preço-sombra aproximado)</div></div>
+    </div>
+    <div data-draw="s-inviavel" data-source="grupos politicas geral"></div>
+
+    <div class="grid">
+      <div class="card" id="card-sim-regiao">
+        <h2>Alocação por região e política</h2>
+        <p class="muted">R$ bilhões na formulação escolhida.</p>
+        <div class="chart" data-draw="s-regiao" data-source="grupos politicas geral">—</div>
+      </div>
+      <div class="card" id="card-sim-perfil">
+        <h2>R$ por habitante em cada perfil: as duas formulações</h2>
+        <p class="muted">Compara equidade e eficiência com os mesmos parâmetros.</p>
+        <div class="chart" data-draw="s-perfil" data-source="grupos politicas geral perfis">—</div>
+      </div>
+    </div>
+
+    <div class="card" id="card-sim-tabela">
+      <h2>Matriz de alocação: grupo × política</h2>
+      <p class="muted">R$ milhões e, entre parênteses, a parcela do déficit do grupo naquela política reduzida pela alocação.</p>
+      <div class="scroll" data-draw="s-tabela" data-source="grupos politicas geral perfis">—</div>
+    </div>
+    <div class="card" id="card-sim-ref">
+      <h2>Conferência com o solver HiGHS</h2>
+      <p class="muted">Com os parâmetros padrão, o mesmo modelo foi resolvido em Python (SciPy/HiGHS). Esta tabela mostra o total por política nas duas soluções de referência, para comparar com o simulador quando os controles estão nos valores padrão.</p>
+      <div data-draw="s-ref" data-source="ref_politica">—</div>
+    </div>
+  </section>
+
+  <!-- ================= ELEIÇÕES ================= -->
+  <section id="eleicoes" data-page="eleicoes" hidden>
+    <div class="note">As votações entram no painel só como camada descritiva. Não são usadas no agrupamento, no índice de prioridade nem na alocação do orçamento: distribuir recursos pelo resultado eleitoral contrariaria o princípio da impessoalidade (art. 37 da Constituição).</div>
+    <div class="kpis">
+      <div class="card kpi"><div class="v" data-draw="e-22" data-source="votos_brasil">—</div><div class="l">Lula no 2º turno de 2022 (votos válidos, municípios do Brasil)</div></div>
+      <div class="card kpi"><div class="v" data-draw="e-26" data-source="votos_brasil">—</div><div class="l">Lula no 2º turno de 2026 (votos válidos, municípios do Brasil)</div></div>
+      <div class="card kpi"><div class="v" data-draw="e-26-1" data-source="votos_brasil">—</div><div class="l">Flávio Bolsonaro no 1º turno de 2026</div></div>
+      <div class="card kpi"><div class="v" data-draw="e-mun" data-source="votos_brasil">—</div><div class="l">municípios com vencedor diferente no 2º turno, 2022 × 2026</div></div>
+    </div>
+    <div class="grid">
+      <div class="card" id="card-votos-perfil">
+        <h2>Votação no 2º turno por perfil de necessidade</h2>
+        <p class="muted">Percentual de Lula nos votos válidos. O restante foi para Jair Bolsonaro (2022) e Flávio Bolsonaro (2026).</p>
+        <div class="chart" data-draw="votos-perfil" data-source="votos_perfil perfis">—</div>
+      </div>
+      <div class="card" id="card-votos-regiao">
+        <h2>Votação por região</h2>
+        <p class="muted">Percentual dos votos válidos em cada turno.</p>
+        <div class="scroll" data-draw="votos-regiao" data-source="votos_regiao">—</div>
+      </div>
+    </div>
+    <p class="muted" style="margin-top: var(--cds-gap-sm);">Os mapas de vencedor e de percentual por município estão na aba "Mapa e visão geral", no seletor "O que mostrar". Votos do exterior não entram nas somas.</p>
+  </section>
+
+  <!-- ================= MÉTODO ================= -->
+  <section id="metodo" data-page="metodo" hidden>
+    <div class="grid">
+      <div class="card">
+        <h2>Como o painel foi construído</h2>
+        <ol>
+          <li><b>Indicadores (11).</b> Saúde: cobertura estimada da Saúde da Família (equipes eSF ativas no CNES × 3.450 pessoas ÷ população, limitada a 100%), UBS por 10 mil habitantes e distância aproximada ao município com hospital mais próximo. Educação: alfabetização de 15 anos ou mais (Censo 2022) e IDEB 2025 dos anos iniciais da rede pública. Saneamento: domicílios com água da rede geral, com esgoto por rede ou fossa séptica e com coleta de lixo (Censo 2022). Renda: renda domiciliar per capita média (Censo 2022), empregos formais privados por mil habitantes (RAIS 2024) e domicílios atendidos pelo Bolsa Família (ago/2026).</li>
+          <li><b>Necessidade.</b> Cada indicador vira uma posição percentual entre os municípios (0 = melhor do país, 100 = pior), já com o sentido corrigido. A necessidade de uma dimensão é a média dos seus indicadores.</li>
+          <li><b>TOPSIS.</b> Distância de cada município à situação ideal e à pior situação nas 11 medidas, com peso igual para cada dimensão. O índice vai de 0 a 100; quanto maior, mais prioritário.</li>
+          <li><b>k-means.</b> Agrupamento das 11 medidas padronizadas, com k = 6 e 50 inicializações. A silhueta é baixa para qualquer k (tabela ao lado): as necessidades variam de forma contínua, e os perfis são faixas de um contínuo, não grupos isolados. O k = 6 foi escolhido por separar perfis com recomendações de política diferentes; k = 3 tem a maior silhueta, mas junta situações distintas.</li>
+          <li><b>Programação linear.</b> Déficit de um grupo numa política = soma de população × necessidade/100 dos seus municípios ("pessoas-equivalentes"). A alocação maximiza a redução do déficit ponderada pelo peso da política e pela intensidade da necessidade (expoente de aversão à desigualdade), sujeita a orçamento, pisos por política, piso regional e teto de absorção por habitante. A formulação de equidade primeiro maximiza a menor fração de déficit reduzida entre todos os grupos e políticas e depois usa a sobra com eficiência (otimização lexicográfica). Dentro de cada grupo, o recurso de cada política é repartido entre os municípios em proporção a população × necessidade.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h2>Escolha do número de perfis</h2>
+        <p class="muted">Silhueta (de −1 a 1, maior é melhor), inércia (soma das distâncias ao centro do grupo) e tamanho do menor grupo para cada k testado.</p>
+        <table data-source="selecao_k" data-row-key="k">
+          <thead><tr><th class="n" data-field="k">k</th><th class="n" data-field="silhueta">Silhueta</th><th class="n" data-field="inercia">Inércia</th><th class="n" data-field="menor_grupo">Menor grupo</th></tr></thead>
+          <tbody data-draw="selk"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h2>Fontes</h2>
+        <ul>
+          <li>IBGE, Censo Demográfico 2022: população, alfabetização, saneamento e rendimento (SIDRA 10295).</li>
+          <li>IBGE, estimativas de população 2025 e PIB dos Municípios 2023.</li>
+          <li>INEP, IDEB 2025 por município.</li>
+          <li>Ministério da Saúde, CNES: equipes de Saúde da Família (competência de outubro de 2026), UBS e hospitais.</li>
+          <li>MTE, RAIS 2024: vínculos formais ativos em 31/12.</li>
+          <li>CGU, Portal da Transparência: pagamentos do Novo Bolsa Família (agosto de 2026).</li>
+          <li>TSE, resultados da eleição presidencial de 2022 e 2026 por município.</li>
+          <li>Malha municipal do IBGE simplificada.</li>
+        </ul>
+        <p class="muted">Os dados oficiais foram obtidos de repositórios públicos no GitHub que os redistribuem já agregados por município: tcc-fea-usp-gasto-publico-educacao-saeb-ideb, saude-brasil-insights, aps-cnes-ine, Saneamento-censo-2022-Analise_de_Dados, analise-bolsa-familia, projeto-bi-pib-municipios, rafapolo/rais e brasil-eleicoes-para-presidente-2022-2026. As somas nacionais das eleições conferem com os totais divulgados pelo TSE.</p>
+      </div>
+      <div class="card">
+        <h2>Limitações</h2>
+        <ul>
+          <li>A mortalidade infantil (SIM/SINASC) não entrou: o servidor que gerou o painel não acessa o DATASUS. O script em R entregue junto mostra como incluí-la com o pacote microdatasus.</li>
+          <li>O IDEB não existe para 251 municípios (participação insuficiente no Saeb). Nesses casos foi usada a mediana do estado; no Distrito Federal, a da região.</li>
+          <li>A cobertura da Saúde da Família é estimada pelo parâmetro clássico de 3.450 pessoas por equipe; não mede atendimento efetivo.</li>
+          <li>A distância ao hospital é calculada entre os pontos centrais dos municípios.</li>
+          <li>Boa Esperança do Norte (MT), criado depois do Censo 2022, fica fora da análise.</li>
+          <li>Os custos por unidade de déficit e as eficiências dos segmentos são hipóteses de trabalho. Antes de usar a alocação em decisão real, devem ser calibrados com custos de programas (por exemplo, custo por ligação de esgoto ou por equipe de saúde).</li>
+          <li>As posições percentuais medem necessidade relativa entre municípios, não distância de uma meta absoluta.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  <p class="muted rodape">Código, dados e método: <a href="https://github.com/ciuffciuff/painel-municipios">github.com/ciuffciuff/painel-municipios</a> · Código sob licença MIT; textos e dados derivados sob CC BY 4.0 · César Ciuffo, 2026.</p>
+</div>
+</div>
+<script src="d3.min.js"></script>
+<script src="dash-shim.js"></script>
+<script src="simplex.js"></script>
+<script src="lpmodel.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
