@@ -26,4 +26,4 @@ O catálogo de 85 bases municipais levantado no projeto (IBGE Cidades e outras f
 
 ## Licenças
 
-Os dados oficiais são públicos e seguem os termos de cada órgão. Os repositórios intermediários têm licenças próprias; consulte cada um antes de redistribuir os arquivos brutos.
+Os dados oficiais são públicos e seguem os termos de cada órgão. Os repositórios intermediários têm licenças próprias; consulte cada um antes de redistribuir os arquivos brutos. A licença deste projeto (MIT para o código, CC BY 4.0 para textos e dados derivados) está em `LICENSE` e `LICENSE-CONTEUDO.md`.

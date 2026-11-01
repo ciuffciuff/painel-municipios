@@ -74,6 +74,10 @@ IBGE (Censo 2022, estimativas de população 2025, PIB dos Municípios 2023, mal
 - A silhueta do k-means é baixa (0,17): as necessidades variam de forma contínua e os perfis são faixas desse contínuo.
 - As votações não entram no agrupamento, no índice nem na alocação (princípio da impessoalidade, art. 37 da Constituição).
 
+## Licença
+
+Código sob a licença [MIT](LICENSE). Textos e dados derivados sob [CC BY 4.0](LICENSE-CONTEUDO.md). Os dados oficiais de origem seguem os termos de cada órgão (detalhes em [LICENSE-CONTEUDO.md](LICENSE-CONTEUDO.md) e [FONTES.md](FONTES.md)).
+
 ## Autor
 
 César Ciuffo — ORCID [0009-0001-0248-6791](https://orcid.org/0009-0001-0248-6791)
