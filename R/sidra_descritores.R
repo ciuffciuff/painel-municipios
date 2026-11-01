@@ -182,3 +182,42 @@ sidra_descritores_varias <- function(tabelas, pausa = 1, ...) {
 }
 
 
+
+
+# -----------------------------------------------------------------------------
+# 5) Catalogo de TODAS as tabelas SIDRA (API de agregados do IBGE)
+# -----------------------------------------------------------------------------
+# Retorna um data.frame com uma linha por tabela:
+#   pesquisa_id, pesquisa, tabela, nome_tabela
+sidra_catalogo <- function(timeout = 120, tentativas = 3) {
+  url <- "https://servicodados.ibge.gov.br/api/v3/agregados"
+
+  resp <- httr2::request(url) |>
+    httr2::req_user_agent("conector-sidra-R") |>
+    httr2::req_timeout(timeout) |>
+    httr2::req_retry(max_tries = tentativas) |>
+    httr2::req_error(is_error = function(resp) FALSE) |>
+    httr2::req_perform()
+
+  status <- httr2::resp_status(resp)
+  texto  <- trimws(sub("^﻿", "", httr2::resp_body_string(resp, encoding = "UTF-8")))
+  if (status >= 400 || !grepl("^[\\{\\[]", texto)) {
+    stop(sprintf("Falha ao baixar o catalogo (HTTP %d): %s", status, substr(texto, 1, 300)))
+  }
+
+  pesq <- jsonlite::fromJSON(texto, simplifyVector = TRUE)
+  linhas <- list()
+  for (i in seq_len(nrow(pesq))) {
+    ag <- pesq$agregados[[i]]
+    if (is.data.frame(ag) && nrow(ag) > 0) {
+      linhas[[length(linhas) + 1]] <- data.frame(
+        pesquisa_id = as.character(pesq$id[i]),
+        pesquisa    = pesq$nome[i],
+        tabela      = as.character(ag$id),
+        nome_tabela = ag$nome
+      )
+    }
+  }
+  catalogo <- do.call(rbind, linhas)
+  catalogo[!duplicated(catalogo$tabela), ]
+}

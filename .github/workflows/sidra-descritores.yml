@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       tabelas:
-        description: "Tabelas SIDRA separadas por virgula (vazio = usa dados/sidra/tabelas.txt)"
+        description: "todas | todas forcar | numeros separados por virgula (vazio = dados/sidra/tabelas.txt)"
         required: false
         default: ""
   # Roda sozinho quando a lista de tabelas ou o conector mudam
@@ -18,7 +18,8 @@ on:
       - ".github/workflows/sidra-descritores.yml"
 
 permissions:
-  contents: write   # necessario para salvar os resultados no repositorio
+  contents: write   # salvar os resultados no repositorio
+  actions: write    # disparar a proxima rodada quando faltarem tabelas
 
 concurrency:
   group: sidra-descritores
@@ -27,6 +28,10 @@ concurrency:
 jobs:
   coletar:
     runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      LIMITE_MINUTOS: "300"   # para de pegar tabelas novas apos 5 h
+      PAUSA_SEGUNDOS: "0.5"
     steps:
       - uses: actions/checkout@v4
 
@@ -54,4 +59,15 @@ jobs:
             git commit -m "SIDRA: descritores atualizados"
             git pull --rebase
             git push
+          fi
+
+      - name: Continuar se faltarem tabelas
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          faltam=$(cat dados/sidra/pendentes.txt 2>/dev/null || echo 0)
+          echo "Pendentes: $faltam"
+          if [ "$faltam" -gt 0 ]; then
+            gh workflow run sidra-descritores.yml --ref "$GITHUB_REF_NAME" -f tabelas=todas
           fi
