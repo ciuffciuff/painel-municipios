@@ -52,10 +52,21 @@ status <- if (file.exists(p_stat) && !modo_forcar) {
 
 if (modo_todas) {
   cat("Baixando catalogo de tabelas do IBGE...\n")
-  catalogo <- sidra_catalogo()
-  utils::write.csv(catalogo, file.path(base, "catalogo.csv"),
-                   row.names = FALSE, fileEncoding = "UTF-8")
-  tabelas <- catalogo$tabela
+  catalogo <- tryCatch(sidra_catalogo(), error = function(e) {
+    cat("Catalogo indisponivel:", conditionMessage(e), "\n"); NULL
+  })
+  if (!is.null(catalogo)) {
+    utils::write.csv(catalogo, file.path(base, "catalogo.csv"),
+                     row.names = FALSE, fileEncoding = "UTF-8")
+    tabelas <- catalogo$tabela
+  } else {
+    # Sem catalogo (servicodados.ibge.gov.br nao responde aos servidores do
+    # GitHub): testa todos os numeros de 1 ate SIDRA_MAX_TABELA direto no
+    # apisidra. Numeros sem tabela ficam no status.csv como erro.
+    maximo  <- as.integer(Sys.getenv("SIDRA_MAX_TABELA", "10500"))
+    tabelas <- as.character(seq_len(maximo))
+    cat("Usando a faixa 1 a", maximo, "\n")
+  }
   cat("Catalogo:", length(tabelas), "tabelas\n")
   tabelas <- setdiff(tabelas, status$tabela)        # pula as ja tentadas
 } else {

@@ -40,6 +40,8 @@ jobs:
       GITHUB_PAT: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main   # sempre a versao mais recente
 
       - uses: r-lib/actions/setup-r@v2
         with:
@@ -48,6 +50,23 @@ jobs:
       - name: Instalar pacotes R
         run: |
           Rscript -e 'install.packages(c("httr2", "jsonlite", "tibble", "curl"))'
+
+      - name: Completar cadeia de certificados (download.inep.gov.br)
+        # O servidor do INEP nao envia o certificado intermediario. Baixamos o
+        # intermediario indicado no proprio certificado (campo "CA Issuers") e
+        # o somamos aos certificados do sistema: a verificacao continua ativa.
+        run: |
+          set +e
+          url=$(openssl s_client -connect download.inep.gov.br:443 -servername download.inep.gov.br </dev/null 2>/dev/null \
+                | openssl x509 -noout -text 2>/dev/null | grep -m1 "CA Issuers" | sed 's/.*URI://')
+          echo "Intermediario: $url"
+          if [ -n "$url" ] && curl -sfL "$url" -o inter.crt; then
+            openssl x509 -inform DER -in inter.crt -out inter.pem 2>/dev/null || cp inter.crt inter.pem
+            cat /etc/ssl/certs/ca-certificates.crt inter.pem > "$RUNNER_TEMP/ca-bundle.pem"
+            echo "CURL_CA_BUNDLE=$RUNNER_TEMP/ca-bundle.pem" >> "$GITHUB_ENV"
+            curl -sI --cacert "$RUNNER_TEMP/ca-bundle.pem" https://download.inep.gov.br/ | head -1
+          fi
+          exit 0
 
       - name: Executar
         run: |
@@ -81,6 +100,6 @@ jobs:
             echo "Nenhuma mudanca nos dados."
           else
             git commit -m "Fontes oficiais: $ACAO ($FONTES)"
-            git pull --rebase
+            git pull --rebase -X theirs
             git push
           fi
