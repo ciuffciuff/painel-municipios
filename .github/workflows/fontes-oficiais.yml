@@ -1,0 +1,92 @@
+name: Fontes oficiais (Transparencia, DATASUS, TSE, INEP)
+
+on:
+  workflow_dispatch:
+    inputs:
+      acao:
+        description: "O que fazer"
+        type: choice
+        options:
+          - descobrir        # baixa os catalogos de cada fonte
+          - transparencia    # executa dados/fontes/transparencia/pedidos.csv
+          - painel-oficial   # roda R/coleta_oficial.R (SIDRA, DATASUS, TSE)
+        default: descobrir
+      fontes:
+        description: "descobrir: todas | transparencia,datasus,tse,inep   ·   transparencia: nomes dos pedidos (vazio = todos)"
+        required: false
+        default: "todas"
+  # Ao mudar os conectores, refaz a descoberta
+  push:
+    branches: [main]
+    paths:
+      - "R/conectores/**"
+      - "R/fontes_descobrir.R"
+      - ".github/workflows/fontes-oficiais.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fontes-oficiais
+  cancel-in-progress: false
+
+jobs:
+  executar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    env:
+      ACAO: ${{ github.event.inputs.acao || 'descobrir' }}
+      FONTES: ${{ github.event.inputs.fontes || 'todas' }}
+      TRANSPARENCIA_CHAVE: ${{ secrets.TRANSPARENCIA_CHAVE }}
+      GITHUB_PAT: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - name: Instalar pacotes R
+        run: |
+          Rscript -e 'install.packages(c("httr2", "jsonlite", "tibble", "curl"))'
+          if [ "$ACAO" = "painel-oficial" ]; then
+            Rscript -e 'install.packages(c("tidyverse", "sidrar", "remotes", "janitor"))'
+            Rscript -e 'remotes::install_github("rfsaldanha/microdatasus", upgrade = "never")'
+          fi
+
+      - name: Executar
+        run: |
+          case "$ACAO" in
+            descobrir)      Rscript R/fontes_descobrir.R "$FONTES" ;;
+            transparencia)  F="$FONTES"; [ "$F" = "todas" ] && F=""; Rscript R/transparencia_coletar.R "$F" ;;
+            painel-oficial) Rscript R/coleta_oficial.R ;;
+          esac
+
+      - name: Separar arquivos grandes demais para o GitHub
+        if: always()
+        run: |
+          mkdir -p grandes
+          find dados -type f -size +95M -print -exec mv {} grandes/ \; || true
+
+      - name: Guardar arquivos grandes como artefato
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arquivos-grandes
+          path: grandes/
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Salvar resultados no repositorio
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add dados/fontes dados/oficial 2>/dev/null || git add dados/fontes
+          if git diff --cached --quiet; then
+            echo "Nenhuma mudanca nos dados."
+          else
+            git commit -m "Fontes oficiais: $ACAO ($FONTES)"
+            git pull --rebase
+            git push
+          fi

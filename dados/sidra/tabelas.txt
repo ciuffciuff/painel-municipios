@@ -1,0 +1,5 @@
+# O que coletar quando o workflow roda sem entrada (texto depois de # e ignorado)
+#   todas          -> catalogo inteiro do IBGE, pulando as ja coletadas
+#   todas forcar   -> catalogo inteiro, refazendo tudo
+#   1612 6579      -> apenas essas tabelas
+todas

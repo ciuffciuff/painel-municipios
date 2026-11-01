@@ -18,6 +18,20 @@ Os dados oficiais foram obtidos de repositórios públicos no GitHub que os redi
 
 O script `R/coleta_oficial.R` baixa os dados diretamente do IBGE (SIDRA), do DATASUS (SIM, SINASC e CNES) e do TSE, e calcula a **taxa de mortalidade infantil** (óbitos de menores de 1 ano ÷ nascidos vivos × 1.000, soma de 2022 a 2024, por município de residência). Ele precisa de acesso a `apisidra.ibge.gov.br`, `ftp.datasus.gov.br` e `cdn.tse.jus.br`, que não estavam disponíveis no ambiente que gerou esta versão; ainda não foi executado. Números de tabelas do SIDRA marcados "a conferir" no script devem ser checados com `sidrar::info_sidra()`.
 
+## Conectores e coleta pelo GitHub Actions
+
+Como o ambiente de análise não alcança os portais oficiais, a coleta roda no GitHub Actions, que tem acesso livre à internet, e os resultados são gravados no repositório.
+
+| Fonte | Conector | O que o catálogo traz (`dados/fontes/<fonte>/`) |
+|---|---|---|
+| IBGE/SIDRA | `R/sidra_descritores.R` (workflow `sidra-descritores.yml`) | Catálogo de todas as tabelas e descritores (variáveis, períodos, classificações) em `dados/sidra/` |
+| Portal da Transparência (CGU) | `R/conectores/transparencia.R` | `endpoints.csv` e `parametros.csv`, lidos da especificação OpenAPI; resultados dos pedidos em `resultados/` |
+| DATASUS | `R/conectores/datasus.R` | `arquivos_ftp.csv`: arquivos .dbc do SIM, SINASC, CNES, SIH e SINAN, com tamanho e data |
+| TSE | `R/conectores/tse.R` | `catalogo.csv`: todos os conjuntos do Portal de Dados Abertos e o endereço de cada arquivo |
+| INEP | `R/conectores/inep.R` | `bases_pda.csv` (bases públicas do inventário do PDA Inep 2025–2027), `links_paginas.csv` (links das páginas oficiais) e `enderecos_testados.csv` |
+
+A API do Portal da Transparência exige chave gratuita (cadastro em portaldatransparencia.gov.br/api-de-dados/cadastrar-email), guardada no segredo `TRANSPARENCIA_CHAVE` do repositório. Os pedidos ficam em `dados/fontes/transparencia/pedidos.csv`; `por_municipio = TRUE` repete a consulta para os 5.570 municípios. Arquivos com mais de 95 MB não vão para o repositório: ficam como artefato da execução por 30 dias.
+
 ## Conferências feitas
 
 - **Eleições:** a soma dos municípios reproduz os percentuais nacionais do TSE nos quatro turnos (por exemplo, 2º turno de 2026: Lula 51,78% e Flávio Bolsonaro 48,22%; 1º turno de 2026: Flávio Bolsonaro 47,04% e Lula 45,16%).

@@ -1,0 +1,73 @@
+name: SIDRA - descritores de tabela
+
+on:
+  # Botao "Run workflow" na aba Actions
+  workflow_dispatch:
+    inputs:
+      tabelas:
+        description: "todas | todas forcar | numeros separados por virgula (vazio = dados/sidra/tabelas.txt)"
+        required: false
+        default: ""
+  # Roda sozinho quando a lista de tabelas ou o conector mudam
+  push:
+    branches: [main]
+    paths:
+      - "dados/sidra/tabelas.txt"
+      - "R/sidra_descritores.R"
+      - "R/sidra_coletar_descritores.R"
+      - ".github/workflows/sidra-descritores.yml"
+
+permissions:
+  contents: write   # salvar os resultados no repositorio
+  actions: write    # disparar a proxima rodada quando faltarem tabelas
+
+concurrency:
+  group: sidra-descritores
+  cancel-in-progress: false
+
+jobs:
+  coletar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      LIMITE_MINUTOS: "300"   # para de pegar tabelas novas apos 5 h
+      PAUSA_SEGUNDOS: "0.5"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - name: Instalar pacotes R
+        run: Rscript -e 'install.packages(c("httr2", "jsonlite", "tibble"))'
+
+      - name: Baixar descritores da SIDRA
+        env:
+          TABELAS: ${{ github.event.inputs.tabelas }}
+        run: Rscript R/sidra_coletar_descritores.R "$TABELAS"
+
+      - name: Salvar resultados no repositorio
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add dados/sidra
+          if git diff --cached --quiet; then
+            echo "Nenhuma mudanca nos dados."
+          else
+            git commit -m "SIDRA: descritores atualizados"
+            git pull --rebase
+            git push
+          fi
+
+      - name: Continuar se faltarem tabelas
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          faltam=$(cat dados/sidra/pendentes.txt 2>/dev/null || echo 0)
+          echo "Pendentes: $faltam"
+          if [ "$faltam" -gt 0 ]; then
+            gh workflow run sidra-descritores.yml --ref "$GITHUB_REF_NAME" -f tabelas=todas
+          fi
