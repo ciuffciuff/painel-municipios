@@ -1,0 +1,4 @@
+"item","ok","mensagem","em_utc"
+"municipios","FALSE","Failed to perform HTTP request. Caused by error in `curl::curl_fetch_memory()`: ! Timeout was reached [servicodados.ibge.gov.br]: Connection timed out after 60000 milliseconds","2026-11-01 23:48:48"
+"agregados","FALSE","Failed to perform HTTP request. Caused by error in `curl::curl_fetch_memory()`: ! Timeout was reached [servicodados.ibge.gov.br]: Connection timed out after 60002 milliseconds","2026-11-01 23:49:49"
+"pesquisas","FALSE","Failed to perform HTTP request. Caused by error in `curl::curl_fetch_memory()`: ! Timeout was reached [servicodados.ibge.gov.br]: Connection timed out after 60002 milliseconds","2026-11-01 23:50:49"
