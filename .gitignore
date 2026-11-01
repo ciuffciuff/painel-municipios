@@ -1,4 +1,4 @@
-fontes/
+/fontes/
 dados/*.parquet
 dados/perfil_raw.csv
 dados/rais2024_mun.csv

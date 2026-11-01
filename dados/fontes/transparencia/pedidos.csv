@@ -1,0 +1,7 @@
+nome,caminho,parametros,por_municipio,param_municipio
+emendas_2025,/api-de-dados/emendas,ano=2025,FALSE,
+emendas_2026,/api-de-dados/emendas,ano=2026,FALSE,
+despesas_orgao_mec_2025,/api-de-dados/despesas/por-orgao,ano=2025&orgaoSuperior=26000,FALSE,
+despesas_orgao_saude_2025,/api-de-dados/despesas/por-orgao,ano=2025&orgaoSuperior=36000,FALSE,
+bolsa_familia_202608,/api-de-dados/novo-bolsa-familia-por-municipio,mesAno=202608,TRUE,codigoIbge
+bpc_202608,/api-de-dados/bpc-por-municipio,mesAno=202608,TRUE,codigoIbge
