@@ -1,0 +1,14 @@
+"base","pagina","padrao"
+"Microdados do Censo Escolar da Educacao Basica","/microdados/censo-escolar","/dados_abertos/microdados_censo_escolar_{ano}.zip"
+"Indicadores Educacionais da Educacao Basica","/indicadores-educacionais",NA
+"Microdados do Censo da Educacao Superior","/microdados/censo-da-educacao-superior","/microdados/microdados_censo_da_educacao_superior_{ano}.zip"
+"Indicadores de Qualidade da Educacao Superior","/indicadores-educacionais",NA
+"Microdados do Enade","/microdados/enade","/microdados/microdados_enade_{ano}.zip"
+"Microdados do IDD","/microdados/idd",NA
+"Microdados do Encceja","/microdados/encceja","/microdados/microdados_encceja_{ano}.zip"
+"Microdados do Enem","/microdados/enem","/microdados/microdados_enem_{ano}.zip"
+"Microdados do Enem por Escola","/microdados/enem-por-escola",NA
+"Microdados do Saeb","/microdados/saeb","/microdados/microdados_saeb_{ano}.zip"
+"Microdados da ANA","/microdados/ana",NA
+"Ideb (resultados)","/microdados/ideb","/ideb/resultados/divulgacao_anos_iniciais_municipios_{ano}.zip"
+"Sinopses Estatisticas","/sinopses-estatisticas",NA
