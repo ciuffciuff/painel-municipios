@@ -1,0 +1,10 @@
+fontes/
+dados/*.parquet
+dados/perfil_raw.csv
+dados/rais2024_mun.csv
+dados/viewbox.json
+node_modules/
+.Rhistory
+.RData
+.Rproj.user/
+__pycache__/
