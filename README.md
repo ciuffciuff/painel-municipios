@@ -34,6 +34,7 @@ Painel interativo:
 | `dados/` | Base final por município, perfis, grupos do modelo, parâmetros, solução de referência e malhas. |
 | `web/` | Código-fonte do painel (HTML/JS, simplex em JavaScript), escrito para a API `dash` do painel do Claude. |
 | `docs/` | Versão independente do painel, publicada no GitHub Pages. `dash-shim.js` substitui a API `dash`; `montar.py` regenera a pasta a partir de `web/` e `dados/` (`python docs/montar.py`). |
+| `R/sidra_*.R`, `dados/sidra/` | Conector da API SIDRA (`DescritoresTabela`). O workflow `.github/workflows/sidra-descritores.yml` baixa os descritores das tabelas listadas em `dados/sidra/tabelas.txt` e salva JSON e CSV em `dados/sidra/descritores/`. |
 | `teste/` | Teste do painel num DOM simulado (`node teste/run.mjs`, requer `jsdom`, `d3` e `papaparse`). |
 
 Documentos: [METODOLOGIA.md](METODOLOGIA.md) (fórmulas e escolhas de cada etapa) e [FONTES.md](FONTES.md) (origem de cada dado e conferências).

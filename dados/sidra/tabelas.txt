@@ -1,0 +1,4 @@
+# Tabelas SIDRA a coletar (uma por linha; texto depois de # e ignorado)
+1612  # Lavouras temporarias
+6579  # Estimativas de populacao
+9514  # Populacao residente - Censo 2022
