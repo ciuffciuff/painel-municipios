@@ -25,6 +25,7 @@ Como o ambiente de análise não alcança os portais oficiais, a coleta roda no 
 | Fonte | Conector | O que o catálogo traz (`dados/fontes/<fonte>/`) |
 |---|---|---|
 | IBGE/SIDRA | `R/sidra_descritores.R` (workflow `sidra-descritores.yml`) | Catálogo de todas as tabelas e descritores (variáveis, períodos, classificações) em `dados/sidra/` |
+| IBGE (API de Serviço de Dados) | `R/conectores/ibge.R` | `municipios.csv`, `agregados.csv` (catálogo SIDRA) e `pesquisas.csv`; o arquivo também traz funções para nomes, notícias, calendário, países, projeções, CNAE e malhas |
 | Portal da Transparência (CGU) | `R/conectores/transparencia.R` | `endpoints.csv` e `parametros.csv`, lidos da especificação OpenAPI; resultados dos pedidos em `resultados/` |
 | DATASUS | `R/conectores/datasus.R` | `arquivos_ftp.csv`: arquivos .dbc do SIM, SINASC, CNES, SIH e SINAN, com tamanho e data |
 | TSE | `R/conectores/tse.R` | `catalogo.csv`: todos os conjuntos do Portal de Dados Abertos e o endereço de cada arquivo |

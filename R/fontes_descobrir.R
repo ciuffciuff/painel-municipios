@@ -5,19 +5,33 @@
 #
 # Uso: Rscript R/fontes_descobrir.R "todas"
 #      Rscript R/fontes_descobrir.R "transparencia,tse"
-# Fontes: transparencia, datasus, tse, inep
-# (A SIDRA/IBGE tem workflow proprio: sidra-descritores.yml)
+# Fontes: ibge, transparencia, datasus, tse, inep
+# (Os descritores das tabelas SIDRA tem workflow proprio: sidra-descritores.yml)
 # =============================================================================
 
 for (f in list.files("R/conectores", pattern = "\\.R$", full.names = TRUE)) source(f)
 
 entrada <- tolower(paste(commandArgs(trailingOnly = TRUE), collapse = " "))
-todas   <- c("transparencia", "datasus", "tse", "inep")
+todas   <- c("ibge", "transparencia", "datasus", "tse", "inep")
 fontes  <- if (!nzchar(trimws(entrada)) || grepl("todas", entrada)) todas else
              intersect(todas, trimws(strsplit(entrada, "[,; ]+")[[1]]))
 if (length(fontes) == 0) stop("Fonte desconhecida. Use: ", paste(todas, collapse = ", "))
 message("Fontes: ", paste(fontes, collapse = ", "))
 base <- "dados/fontes"
+
+# --- IBGE: localidades, catalogo de agregados (SIDRA) e pesquisas -------------
+if ("ibge" %in% fontes) {
+  message("\n== IBGE ==")
+  etapa("ibge", "municipios", {
+    salvar_csv(ibge_localidades("municipios", nivelado = TRUE), file.path(base, "ibge/municipios.csv"))
+  })
+  etapa("ibge", "agregados", {
+    salvar_csv(ibge_agregados_lista(), file.path(base, "ibge/agregados.csv"))
+  })
+  etapa("ibge", "pesquisas", {
+    salvar_csv(ibge_pesquisas(), file.path(base, "ibge/pesquisas.csv"))
+  })
+}
 
 # --- Portal da Transparencia: endpoints e parametros (sem chave) ---------------
 if ("transparencia" %in% fontes) {

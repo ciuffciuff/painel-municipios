@@ -189,7 +189,7 @@ sidra_descritores_varias <- function(tabelas, pausa = 1, ...) {
 # -----------------------------------------------------------------------------
 # Retorna um data.frame com uma linha por tabela:
 #   pesquisa_id, pesquisa, tabela, nome_tabela
-sidra_catalogo <- function(timeout = 120, tentativas = 3) {
+sidra_catalogo <- function(timeout = 300, tentativas = 5) {
   url <- "https://servicodados.ibge.gov.br/api/v3/agregados"
 
   resp <- httr2::request(url) |>

@@ -14,6 +14,9 @@
 #   remotes::install_github("rfsaldanha/microdatasus")
 # =============================================================================
 
+# Arquivos grandes (o do TSE tem ~550 MB): o padrão do R desiste após 60 s
+options(timeout = 3600)
+
 library(tidyverse)
 library(sidrar)
 library(microdatasus)
