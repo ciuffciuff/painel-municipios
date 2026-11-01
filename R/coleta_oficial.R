@@ -19,6 +19,18 @@ library(sidrar)
 library(microdatasus)
 
 dir.create("dados/oficial", recursive = TRUE, showWarnings = FALSE)
+# Executa um bloco; se der erro, avisa e continua com o próximo
+# (assim uma tabela com problema não impede as outras de serem salvas)
+falhas <- character()
+tentar <- function(nome, expr) {
+  message("\n== ", nome, " ==")
+  tryCatch(expr, error = function(e) {
+    message("FALHOU: ", nome, " -> ", conditionMessage(e))
+    falhas <<- c(falhas, paste0(nome, ": ", conditionMessage(e)))
+  })
+  invisible(NULL)
+}
+
 salvar <- function(df, nome) {
   write_csv(df, file.path("dados/oficial", paste0(nome, ".csv")))
   message("Salvo: ", nome, " (", nrow(df), " linhas)")
@@ -37,16 +49,22 @@ sidra_mun <- function(tabela, periodo, variavel = "allxp", classif = NULL) {
 }
 
 # População estimada 2025 (tabela 6579)
+tentar("IBGE população 2025", {
 pop <- sidra_mun(6579, 2025) |> select(cod_ibge, pop2025 = valor)
 salvar(pop, "ibge_populacao_2025")
+})
 
 # Rendimento domiciliar per capita médio, Censo 2022 (tabela 10295; confira a variável da média)
+tentar("IBGE renda per capita 2022", {
 renda <- sidra_mun(10295, 2022)
 salvar(renda, "ibge_renda_pc_2022_bruto")   # filtre a variável de rendimento médio
+})
 
 # Alfabetização 15 anos ou mais, Censo 2022 (tabela 9542 — confirmar com info_sidra)
+tentar("IBGE alfabetização 2022", {
 alfab <- sidra_mun(9542, 2022)
 salvar(alfab, "ibge_alfabetizacao_2022_bruto")
+})
 
 # Saneamento, Censo 2022: água, esgoto e lixo por domicílio.
 # As tabelas do universo do Censo 2022 sobre características dos domicílios
@@ -55,8 +73,10 @@ salvar(alfab, "ibge_alfabetizacao_2022_bruto")
 # tab_agua <- ...; tab_esgoto <- ...; tab_lixo <- ...
 
 # PIB dos Municípios 2023 (tabela 5938, variável 37 = PIB a preços correntes)
+tentar("IBGE PIB 2023", {
 pib <- sidra_mun(5938, 2023, variavel = "37") |> select(cod_ibge, pib_mil_reais = valor)
 salvar(pib, "ibge_pib_2023")
+})
 
 # -----------------------------------------------------------------------------
 # 2. Mortalidade infantil (SIM + SINASC, DATASUS)
@@ -66,6 +86,7 @@ salvar(pib, "ibge_pib_2023")
 # -----------------------------------------------------------------------------
 anos <- 2022:2024
 
+tentar("DATASUS mortalidade infantil", {
 obitos_inf <- fetch_datasus(year_start = min(anos), year_end = max(anos),
                             information_system = "SIM-DOINF",
                             vars = c("CODMUNRES", "DTOBITO", "IDADE")) |>
@@ -84,6 +105,7 @@ tmi <- nascidos |>
 # O DATASUS usa o código de 6 dígitos; o painel usa o de 7.
 # A junção é feita pelo código de 6 dígitos (cod_ibge %/% 10).
 salvar(tmi, "datasus_mortalidade_infantil_2022_2024")
+})
 
 # Atenção: SIM-DOINF já traz só óbitos de menores de 1 ano. O ano mais recente
 # pode estar como "preliminar" no DATASUS; registre a data da coleta.
@@ -93,19 +115,31 @@ salvar(tmi, "datasus_mortalidade_infantil_2022_2024")
 # -----------------------------------------------------------------------------
 # 3. CNES: estabelecimentos (UBS e hospitais) e equipes de Saúde da Família
 # -----------------------------------------------------------------------------
-cnes_st <- fetch_datasus(year_start = 2026, month_start = 10, year_end = 2026, month_end = 10,
-                         information_system = "CNES-ST", vars = c("CODUFMUN", "TP_UNID"))
+tentar("CNES estabelecimentos", {
+# O mês mais recente pode ainda não estar publicado: tenta out, set e ago/2026
+cnes_mes <- function(sistema, ...) {
+  for (m in 10:8) {
+    d <- tryCatch(fetch_datasus(year_start = 2026, month_start = m, year_end = 2026,
+                                month_end = m, information_system = sistema, ...),
+                  error = function(e) NULL)
+    if (!is.null(d) && nrow(d) > 0) { message(sistema, ": usando 2026-", m); return(d) }
+  }
+  stop("Nenhum mês de ago a out/2026 disponível para ", sistema)
+}
+cnes_st <- cnes_mes("CNES-ST", vars = c("CODUFMUN", "TP_UNID"))
 # TP_UNID: 01 = posto de saúde, 02 = centro de saúde/UBS, 05 = hospital geral, 07 = hospital especializado
 estab <- cnes_st |>
   mutate(cod6 = as.integer(CODUFMUN)) |>
   group_by(cod6) |>
   summarise(ubs = sum(TP_UNID %in% c("01", "02")), hospitais = sum(TP_UNID %in% c("05", "07")))
 salvar(estab, "cnes_estabelecimentos_2026_10")
+})
 
-cnes_ep <- fetch_datasus(year_start = 2026, month_start = 10, year_end = 2026, month_end = 10,
-                         information_system = "CNES-EP")
+tentar("CNES equipes", {
+cnes_ep <- cnes_mes("CNES-EP")
 # Confira no dicionário do CNES-EP o código do tipo de equipe eSF (TIPO_EQP) e o campo de desativação.
 salvar(cnes_ep |> count(CODUFMUN, TIPO_EQP), "cnes_equipes_2026_10_bruto")
+})
 
 # -----------------------------------------------------------------------------
 # 4. TSE: votação para Presidente por município (2022 e 2026)
@@ -123,8 +157,10 @@ baixar_tse <- function(ano) {
     group_by(ano = ano, turno = NR_TURNO, cod_tse = CD_MUNICIPIO, municipio = NM_MUNICIPIO, uf = SG_UF, candidato = NM_URNA_CANDIDATO) |>
     summarise(votos = sum(QT_VOTOS_NOMINAIS), .groups = "drop")
 }
+tentar("TSE presidente", {
 votos <- bind_rows(baixar_tse(2022), baixar_tse(2026))
 salvar(votos, "tse_presidente_municipio_2022_2026")
+})
 # Confira: a soma nacional deve dar Lula 50,90% (2022, 2º turno) e 51,78% (2026, 2º turno).
 
 # -----------------------------------------------------------------------------
@@ -136,4 +172,7 @@ salvar(votos, "tse_presidente_municipio_2022_2026")
 #    - Bolsa Família: portaldatransparencia.gov.br/download-de-dados/novo-bolsa-familia
 #      (um CSV por mês; agregue por código SIAFI e converta para IBGE).
 # -----------------------------------------------------------------------------
+writeLines(c(paste("Coleta em", Sys.time()), if (length(falhas)) paste("FALHA:", falhas) else "Todas as etapas OK"),
+           "dados/oficial/LEIA-ME_coleta.txt")
 message("Coleta concluída. Registre a data de hoje no FONTES.md: ", Sys.Date())
+if (length(falhas)) message("Etapas com falha:\n", paste(falhas, collapse = "\n"))

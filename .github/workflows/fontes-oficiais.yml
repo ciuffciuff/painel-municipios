@@ -9,7 +9,6 @@ on:
         options:
           - descobrir        # baixa os catalogos de cada fonte
           - transparencia    # executa dados/fontes/transparencia/pedidos.csv
-          - painel-oficial   # roda R/coleta_oficial.R (SIDRA, DATASUS, TSE)
         default: descobrir
       fontes:
         description: "descobrir: todas | transparencia,datasus,tse,inep   ·   transparencia: nomes dos pedidos (vazio = todos)"
@@ -49,17 +48,12 @@ jobs:
       - name: Instalar pacotes R
         run: |
           Rscript -e 'install.packages(c("httr2", "jsonlite", "tibble", "curl"))'
-          if [ "$ACAO" = "painel-oficial" ]; then
-            Rscript -e 'install.packages(c("tidyverse", "sidrar", "remotes", "janitor"))'
-            Rscript -e 'remotes::install_github("rfsaldanha/microdatasus", upgrade = "never")'
-          fi
 
       - name: Executar
         run: |
           case "$ACAO" in
             descobrir)      Rscript R/fontes_descobrir.R "$FONTES" ;;
             transparencia)  F="$FONTES"; [ "$F" = "todas" ] && F=""; Rscript R/transparencia_coletar.R "$F" ;;
-            painel-oficial) Rscript R/coleta_oficial.R ;;
           esac
 
       - name: Separar arquivos grandes demais para o GitHub
@@ -82,7 +76,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git add dados/fontes dados/oficial 2>/dev/null || git add dados/fontes
+          git add dados/fontes
           if git diff --cached --quiet; then
             echo "Nenhuma mudanca nos dados."
           else
