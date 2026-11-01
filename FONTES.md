@@ -14,6 +14,10 @@ Os dados oficiais foram obtidos de repositórios públicos no GitHub que os redi
 | Empregos formais (RAIS 2024) e malha municipal | [rafapolo/rais](https://github.com/rafapolo/rais) | `docs/data/mun/2024.bin.gz`, `docs/data/brasil.topo.json` | MTE/PDET e IBGE (malha municipal) |
 | Votação presidencial 2022 e 2026 por município | [JeffAirData/brasil-eleicoes-para-presidente-2022-2026](https://github.com/JeffAirData/brasil-eleicoes-para-presidente-2022-2026) | `Data/processed/president_votes_municipality.parquet`, `turnout_municipality.parquet` | TSE, Portal de Dados Abertos |
 
+## Versão institucional: coleta nas fontes oficiais
+
+O script `R/coleta_oficial.R` baixa os dados diretamente do IBGE (SIDRA), do DATASUS (SIM, SINASC e CNES) e do TSE, e calcula a **taxa de mortalidade infantil** (óbitos de menores de 1 ano ÷ nascidos vivos × 1.000, soma de 2022 a 2024, por município de residência). Ele precisa de acesso a `apisidra.ibge.gov.br`, `ftp.datasus.gov.br` e `cdn.tse.jus.br`, que não estavam disponíveis no ambiente que gerou esta versão; ainda não foi executado. Números de tabelas do SIDRA marcados "a conferir" no script devem ser checados com `sidrar::info_sidra()`.
+
 ## Conferências feitas
 
 - **Eleições:** a soma dos municípios reproduz os percentuais nacionais do TSE nos quatro turnos (por exemplo, 2º turno de 2026: Lula 51,78% e Flávio Bolsonaro 48,22%; 1º turno de 2026: Flávio Bolsonaro 47,04% e Lula 45,16%).
