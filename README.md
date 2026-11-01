@@ -35,6 +35,7 @@ Painel interativo:
 | `web/` | Código-fonte do painel (HTML/JS, simplex em JavaScript), escrito para a API `dash` do painel do Claude. |
 | `docs/` | Versão independente do painel, publicada no GitHub Pages. `dash-shim.js` substitui a API `dash`; `montar.py` regenera a pasta a partir de `web/` e `dados/` (`python docs/montar.py`). |
 | `R/sidra_*.R`, `dados/sidra/` | Conector da API SIDRA (`DescritoresTabela`). O workflow `.github/workflows/sidra-descritores.yml` baixa os descritores de todas as tabelas do catálogo do IBGE (ou das listadas em `dados/sidra/tabelas.txt`), guarda o JSON original em `dados/sidra/descritores/` e tabelas consolidadas em `dados/sidra/consolidado/`. |
+| `R/conectores/`, `dados/fontes/` | Conectores para Portal da Transparência (API da CGU), DATASUS (FTP), TSE (catálogo CKAN) e INEP (downloads). O workflow `.github/workflows/fontes-oficiais.yml` baixa os catálogos de cada fonte (`descobrir`), executa os pedidos da API da Transparência (`transparencia`) ou roda `R/coleta_oficial.R` (`painel-oficial`). Ver [FONTES.md](FONTES.md). |
 | `teste/` | Teste do painel num DOM simulado (`node teste/run.mjs`, requer `jsdom`, `d3` e `papaparse`). |
 
 Documentos: [METODOLOGIA.md](METODOLOGIA.md) (fórmulas e escolhas de cada etapa) e [FONTES.md](FONTES.md) (origem de cada dado e conferências).
