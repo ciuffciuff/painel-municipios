@@ -69,8 +69,13 @@ http_json <- function(url, ..., simplificar = TRUE) {
 http_verificar <- function(urls, pausa = 0.3) {
   linhas <- lapply(urls, function(u) {
     r <- http_requisitar(u, metodo = "HEAD", timeout = 30, tentativas = 2)
-    # Alguns servidores nao aceitam HEAD; tenta GET so do cabecalho
-    if (!is.na(r$status) && r$status == 405) r <- http_requisitar(u, timeout = 30, tentativas = 1)
+    # Alguns servidores nao aceitam HEAD; tenta GET pedindo so o 1o byte
+    # (sem isso, baixaria arquivos de varios GB inteiros)
+    if (!is.na(r$status) && r$status %in% c(403, 405, 501)) {
+      r <- http_requisitar(u, headers = list(Range = "bytes=0-0"), timeout = 30, tentativas = 1)
+      tam <- r$cabecalhos[["content-range"]]
+      if (!is.null(tam)) r$cabecalhos[["content-length"]] <- sub(".*/", "", tam)
+    }
     Sys.sleep(pausa)
     h <- r$cabecalhos
     data.frame(
