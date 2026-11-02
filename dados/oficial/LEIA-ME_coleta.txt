@@ -1,2 +1,2 @@
-Coleta em 2026-11-01 23:45:48.667849
-FALHA: TSE presidente: download from 'https://cdn.tse.jus.br/estatistica/sead/odsele/votacao_candidato_munzona/votacao_candidato_munzona_2022.zip' failed
+Coleta em 2026-11-02 00:04:13.394896
+Todas as etapas OK
