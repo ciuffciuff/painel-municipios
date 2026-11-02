@@ -34,6 +34,21 @@ Como o ambiente de análise não alcança os portais oficiais, a coleta roda no 
 
 A API do Portal da Transparência exige chave gratuita (cadastro em portaldatransparencia.gov.br/api-de-dados/cadastrar-email), guardada no segredo `TRANSPARENCIA_CHAVE` do repositório. Os pedidos ficam em `dados/fontes/transparencia/pedidos.csv`; `por_municipio = TRUE` repete a consulta para os 5.570 municípios. Arquivos com mais de 95 MB não vão para o repositório: ficam como artefato da execução por 30 dias.
 
+### Coleta de 1º e 2 de novembro de 2026 (GitHub Actions)
+
+`R/coleta_oficial.R` rodou completo no workflow `painel-oficial.yml`, gerando `dados/oficial/`:
+
+| Arquivo | Conteúdo | Conferência |
+|---|---|---|
+| `ibge_populacao_2025.csv` | SIDRA 6579, população estimada 2025 | Brasil: 213.421.037 habitantes |
+| `ibge_renda_pc_2022_bruto.csv`, `ibge_alfabetizacao_2022_bruto.csv` | SIDRA 10295 e 9542, Censo 2022 (brutos, variáveis a filtrar) | 5.570 municípios |
+| `ibge_pib_2023.csv` | SIDRA 5938, variável 37 | 5.570 municípios |
+| `datasus_mortalidade_infantil_2022_2024.csv` | SIM-DOINF ÷ SINASC × 1.000, soma 2022–2024 | Brasil: 12,59 por mil nascidos vivos (7.488.823 nascidos) |
+| `cnes_estabelecimentos_2026_10.csv`, `cnes_equipes_2026_10_bruto.csv` | CNES-ST e CNES-EP de **setembro/2026** (outubro ainda não publicado; o nome do arquivo foi mantido) | 50.733 postos/UBS e 6.636 hospitais |
+| `tse_presidente_municipio_2022_2026.csv` | Votação para Presidente por município | Sem o exterior: Lula 50,90% (2022, 2º turno); Flávio Bolsonaro 47,04% e Lula 45,16% (2026, 1º turno); Lula 51,78% (2026, 2º turno) |
+
+Acesso a partir dos servidores do GitHub: `apisidra.ibge.gov.br`, `ftp.datasus.gov.br`, `cdn.tse.jus.br`, `dadosabertos.tse.jus.br`, `api.portaldatransparencia.gov.br` e as páginas do INEP no gov.br responderam. `servicodados.ibge.gov.br` (API de Serviço de Dados do IBGE e catálogo de agregados) e `download.inep.gov.br` não responderam (tempo esgotado); para essas, rode os conectores a partir de uma máquina no Brasil.
+
 ## Conferências feitas
 
 - **Eleições:** a soma dos municípios reproduz os percentuais nacionais do TSE nos quatro turnos (por exemplo, 2º turno de 2026: Lula 51,78% e Flávio Bolsonaro 48,22%; 1º turno de 2026: Flávio Bolsonaro 47,04% e Lula 45,16%).
