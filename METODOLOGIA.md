@@ -117,24 +117,24 @@ O expoente α (aversão à desigualdade, padrão 1) dá mais valor a reduzir dé
 1. **Primeiro estágio:** maximizar t, sujeito a todas as restrições e a Σ_s y[g, p, s] / déficit[g, p] ≥ t para todo grupo e política. Ou seja, maximizar a menor fração de déficit reduzida.
 2. **Segundo estágio:** manter t ≥ 0,999 × t* e maximizar o objetivo de eficiência com o orçamento que sobra.
 
-Com os parâmetros padrão, a solução de equidade garante redução mínima de 13,2% do déficit em todos os 120 pares grupo × política.
+Com os parâmetros padrão, a solução de equidade garante redução mínima de 13,3% do déficit em todos os 120 pares grupo × política.
 
 ### Solução e conferência
 
 - `python/lp.py` resolve o modelo com SciPy/HiGHS e grava `dados/alocacao_referencia.csv` e `dados/ref_politica.csv`.
-- O painel resolve o mesmo modelo em JavaScript (`web/simplex.js`, simplex de duas fases) a cada mudança de parâmetro. Nos parâmetros padrão, os dois solvers dão o mesmo valor ótimo (86.056,5 na eficiência).
+- O painel resolve o mesmo modelo em JavaScript (`web/simplex.js`, simplex de duas fases) a cada mudança de parâmetro. Nos parâmetros padrão, os dois solvers dão a mesma solução (valor ótimo de 81.021,5 na eficiência; t = 0,1335 na equidade).
 - `R/painel_municipios.R` mostra a formulação de eficiência com `lpSolve`.
 
 Resultado padrão por política (R$ bilhões):
 
 | Formulação | Saúde | Educação | Saneamento | Renda |
 |---|---|---|---|---|
-| Eficiência | 9,71 | 6,29 | 2,00 | 2,00 |
-| Equidade | 5,24 | 2,92 | 7,16 | 4,68 |
+| Eficiência | 9,80 | 6,20 | 2,00 | 2,00 |
+| Equidade | 5,01 | 2,95 | 7,31 | 4,73 |
 
 A eficiência concentra recursos onde a pessoa-equivalente é mais barata (saúde e educação); a equidade puxa recursos para saneamento e renda, onde estão os maiores déficits relativos.
 
-**Preço-sombra:** o painel estima o ganho de R$ 1 bilhão adicional resolvendo de novo com B + 1. Na formulação de eficiência, o dual do orçamento no HiGHS é 3,74 unidades do objetivo por R$ 1 milhão.
+**Preço-sombra:** o painel estima o ganho de R$ 1 bilhão adicional resolvendo de novo com B + 1. Na formulação de eficiência, o dual do orçamento no HiGHS é 3,53 unidades do objetivo por R$ 1 milhão.
 
 ### Do grupo ao município
 
