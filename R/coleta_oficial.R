@@ -35,7 +35,11 @@ tentar <- function(nome, expr) {
 }
 
 salvar <- function(df, nome) {
-  write_csv(df, file.path("dados/oficial", paste0(nome, ".csv")))
+  if (nrow(df) == 0) stop("tabela vazia, nada salvo: ", nome)
+  caminho <- file.path("dados/oficial", paste0(nome, ".csv"))
+  write_csv(df, caminho)
+  # Confere a gravação (disco cheio gera arquivo vazio sem erro)
+  if (file.size(caminho) < 100) stop("gravação falhou (disco cheio?): ", caminho)
   message("Salvo: ", nome, " (", nrow(df), " linhas)")
 }
 
@@ -153,8 +157,13 @@ salvar(cnes_ep |> count(CODUFMUN, TIPO_EQP), "cnes_equipes_2026_10_bruto")
 baixar_tse <- function(ano) {
   url <- sprintf("https://cdn.tse.jus.br/estatistica/sead/odsele/votacao_candidato_munzona/votacao_candidato_munzona_%d.zip", ano)
   zip <- tempfile(fileext = ".zip"); download.file(url, zip, mode = "wb")
-  arq <- unzip(zip, exdir = tempdir())
-  arq <- arq[grepl("_BRASIL\\.csv$|_BR\\.csv$", arq)][1]
+  # Extrai só o arquivo nacional: o zip inteiro (um CSV por UF) enche o disco
+  nomes <- unzip(zip, list = TRUE)$Name
+  alvo  <- nomes[grepl("_BRASIL\\.csv$|_BR\\.csv$", nomes)][1]
+  if (is.na(alvo)) stop("Arquivo nacional não encontrado no zip de ", ano)
+  arq <- unzip(zip, files = alvo, exdir = tempdir(), junkpaths = TRUE)
+  unlink(zip)
+  on.exit(unlink(arq))
   read_csv2(arq, locale = locale(encoding = "latin1"), show_col_types = FALSE) |>
     filter(DS_CARGO == "Presidente") |>
     group_by(ano = ano, turno = NR_TURNO, cod_tse = CD_MUNICIPIO, municipio = NM_MUNICIPIO, uf = SG_UF, candidato = NM_URNA_CANDIDATO) |>
