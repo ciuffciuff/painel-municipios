@@ -363,7 +363,7 @@
           ['Alocação simulada', al ? 'R$ ' + F.d2(al.get(m.cod)) + ' por habitante' : 's/d']]),
       h('h4', { text: 'Necessidade por dimensão (0 = melhor, 100 = pior)' }), needs,
       h('h4', { text: 'Indicadores' }),
-      dl([['Mortalidade infantil 2022–23', F.d1(m.tmi) + ' por mil (bruta ' + F.d1(m.tmi_bruta) + '; ' + F.i(m.nascidos) + ' nascidos)'], ['Cobertura Saúde da Família', F.d1(m.cob_esf) + '%'], ['UBS por 10 mil hab.', F.d2(m.ubs_10k)], ['Distância ao hospital', F.d1(m.dist_hospital_km) + ' km'],
+      dl([['Mortalidade infantil 2022–24', F.d1(m.tmi) + ' por mil (bruta ' + F.d1(m.tmi_bruta) + '; ' + F.i(m.nascidos) + ' nascidos)'], ['Cobertura Saúde da Família', F.d1(m.cob_esf) + '%'], ['UBS por 10 mil hab.', F.d2(m.ubs_10k)], ['Distância ao hospital', F.d1(m.dist_hospital_km) + ' km'],
           ['Alfabetização 15+', F.d1(m.alfab) + '%'], ['IDEB anos iniciais', F.d1(m.ideb_ai) + (m.ideb_imputado ? ' (imputado)' : '')],
           ['Água por rede (população)', F.d1(m.agua_rede) + '%' + (m.agua_fonte === 'Censo 2022' ? ' (Censo)' : '')], ['Esgoto adequado', F.d1(m.esgoto_adeq) + '%'], ['Coleta de lixo', F.d1(m.lixo_coleta) + '%'],
           ['Renda per capita', 'R$ ' + F.i(m.renda_pc)], ['Empregos formais/mil hab.', F.d1(m.emprego_1000)], ['Domicílios no Bolsa Família', F.d1(m.bf_cob) + '%'], ['PIB per capita 2023', 'R$ ' + F.i(m.pib_pc)]]),

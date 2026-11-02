@@ -6,6 +6,13 @@ R = os.environ.get('FONTES', 'fontes') + '/'
 OUT = 'dados/'
 import os; os.makedirs(OUT, exist_ok=True)
 
+# Dados coletados direto nas fontes oficiais por R/coleta_oficial.R (workflow
+# painel-oficial.yml). Com OFICIAL=1 (padrão, se os arquivos existirem) eles
+# substituem os repositórios de terceiros; OFICIAL=0 refaz a versão anterior.
+OF = OUT + 'oficial/'
+OFICIAL = os.environ.get('OFICIAL', '1') == '1' and os.path.exists(OF + 'datasus_mortalidade_infantil_2022_2024.csv')
+print('Fontes oficiais:', 'sim' if OFICIAL else 'não')
+
 def num(s):
     return pd.to_numeric(s.astype(str).str.strip().replace({'-': '0', '': np.nan, 'nan': np.nan}), errors='coerce')
 
@@ -21,6 +28,15 @@ base['alfab'] = base.alfab * 100
 sb = pd.read_csv(R + 'saude-brasil-insights/data/processed/municipios.csv')
 sb = sb.rename(columns={'ibge7': 'cod', 'populacao': 'pop2025'})[['cod', 'pop2025', 'ubs', 'hospitais', 'ubs_por_10k', 'distancia_hospital_proxy_km']]
 base = base.merge(sb, on='cod', how='left')
+if OFICIAL:
+    # população estimada 2025 (SIDRA 6579) e estabelecimentos do CNES (set/2026)
+    pop = pd.read_csv(OF + 'ibge_populacao_2025.csv').rename(columns={'cod_ibge': 'cod'})
+    base = base.drop(columns='pop2025').merge(pop, on='cod', how='left')
+    est = pd.read_csv(OF + 'cnes_estabelecimentos_2026_10.csv')
+    base['cod6'] = base.cod // 10
+    base = base.drop(columns=['ubs', 'hospitais']).merge(est, on='cod6', how='left')
+    base[['ubs', 'hospitais']] = base[['ubs', 'hospitais']].fillna(0)
+    base['ubs_por_10k'] = (base.ubs / base.pop2025 * 1e4).round(2)
 
 # equipes de Saúde da Família (CNES, out/2026)
 eq = pd.concat([pd.read_csv(f, dtype=str, sep=';') for f in sorted(glob.glob(R + 'aps-cnes-ine/dados/atual/*_equipes.csv.gz'))])
@@ -57,6 +73,11 @@ bf['cod'] = pd.to_numeric(bf.cod_ibge, errors='coerce')
 bf = bf.dropna(subset=['cod']); bf['cod'] = bf.cod.astype(int)
 base = base.merge(bf[['cod', 'renda_media', 'familias', 'domicilios', 'cobertura_pct']].rename(
     columns={'renda_media': 'renda_pc', 'familias': 'bf_familias', 'cobertura_pct': 'bf_cob'}), on='cod', how='left')
+if OFICIAL:
+    # rendimento nominal médio mensal domiciliar per capita, Censo 2022 (SIDRA 10295)
+    rd = pd.read_csv(OF + 'ibge_renda_pc_2022_bruto.csv')
+    rd = rd[rd.variavel.str.startswith('Valor do rendimento nominal médio mensal domiciliar per capita')]
+    base = base.drop(columns='renda_pc').merge(rd.rename(columns={'cod_ibge': 'cod', 'valor': 'renda_pc'})[['cod', 'renda_pc']], on='cod', how='left')
 
 # PIB per capita 2023
 pib = pd.read_csv(R + 'projeto-bi-pib-municipios/dados/csv/pib_municipios_tratado.csv', encoding='utf-8-sig', sep=';', decimal=',')
@@ -71,6 +92,15 @@ base['emprego_1000'] = 1000 * base.vinc_priv.fillna(0) / base.pop2025
 
 # ---- eleições presidenciais 2022 e 2026 ----
 v = pd.read_parquet(R + 'brasil-eleicoes-para-presidente-2022-2026/Data/processed/president_votes_municipality.parquet')
+if OFICIAL:
+    # votos do TSE (votacao_candidato_munzona); a correspondência código TSE -> IBGE
+    # vem da tabela do repositório anterior (o TSE usa código próprio de município)
+    mapa = v[['tse_code', 'ibge_code']].drop_duplicates()
+    o = pd.read_csv(OF + 'tse_presidente_municipio_2022_2026.csv')
+    v = o.rename(columns={'ano': 'year', 'turno': 'round', 'cod_tse': 'tse_code', 'candidato': 'candidate', 'votos': 'votes'})
+    v = v.merge(mapa, on='tse_code', how='left')
+    sem = v[(v.uf != 'ZZ') & v.ibge_code.isna()].tse_code.nunique()
+    print('Municípios do TSE sem código IBGE:', sem)
 v = v[v.uf != 'ZZ'].dropna(subset=['ibge_code'])
 v['cod'] = v.ibge_code.astype(int)
 tot = v.groupby(['cod', 'year', 'round']).votes.sum().rename('validos')
@@ -110,13 +140,19 @@ base = base.drop(columns=['SDG6_6_SERV_AG', 'SDG3_29_SF', 'SDG4_5_T_AN_15A'])
 # ---- mortalidade infantil (SIM/SINASC), 2022 e 2023 somados ----
 # taxa anual do IDSC (série temporal, fonte DataSUS) × nascidos vivos do SINASC (OpenDataSUS) = óbitos;
 # depois soma de óbitos ÷ soma de nascidos × 1.000. Conferência: Brasil 2023 = 12,61 (DATASUS).
-st = pd.read_excel(IDSC, 'Séries Temporais', usecols=['ID', 'ANO', 'SDG3_15_T_M_INF'])
-st = st[st.ANO.isin([2022, 2023])].copy(); st['cod6'] = st.ID // 10
-nv = pd.read_csv(R + 'painel-epidemiologico-saude-materna/dados/tratados/fato_nascidos_municipio.csv')
-nv = nv.groupby(['ano', 'cod_mun_res']).qtd_nascidos.sum().reset_index().rename(columns={'ano': 'ANO', 'cod_mun_res': 'cod6'})
-st = st.merge(nv, on=['ANO', 'cod6'], how='left')
-st['obitos'] = (st.SDG3_15_T_M_INF * st.qtd_nascidos / 1000).round()
-tmi = st.groupby('ID').agg(obitos_inf=('obitos', 'sum'), nascidos=('qtd_nascidos', 'sum')).reset_index().rename(columns={'ID': 'cod'})
+if OFICIAL:
+    # óbitos de menores de 1 ano (SIM-DOINF) e nascidos vivos (SINASC), 2022 a 2024 somados,
+    # por município de residência (código de 6 dígitos)
+    of = pd.read_csv(OF + 'datasus_mortalidade_infantil_2022_2024.csv')
+    tmi = base[['cod']].assign(cod6=base.cod // 10).merge(of[['cod6', 'obitos_inf', 'nascidos']], on='cod6', how='inner').drop(columns='cod6')
+st = None if OFICIAL else pd.read_excel(IDSC, 'Séries Temporais', usecols=['ID', 'ANO', 'SDG3_15_T_M_INF'])
+if not OFICIAL:
+    st = st[st.ANO.isin([2022, 2023])].copy(); st['cod6'] = st.ID // 10
+    nv = pd.read_csv(R + 'painel-epidemiologico-saude-materna/dados/tratados/fato_nascidos_municipio.csv')
+    nv = nv.groupby(['ano', 'cod_mun_res']).qtd_nascidos.sum().reset_index().rename(columns={'ano': 'ANO', 'cod_mun_res': 'cod6'})
+    st = st.merge(nv, on=['ANO', 'cod6'], how='left')
+    st['obitos'] = (st.SDG3_15_T_M_INF * st.qtd_nascidos / 1000).round()
+    tmi = st.groupby('ID').agg(obitos_inf=('obitos', 'sum'), nascidos=('qtd_nascidos', 'sum')).reset_index().rename(columns={'ID': 'cod'})
 tmi['tmi_bruta'] = 1000 * tmi.obitos_inf / tmi.nascidos
 # Suavização bayesiana empírica (Marshall, 1991) em direção à taxa do estado:
 # em municípios com poucos nascimentos, um único óbito muda muito a taxa bruta.
@@ -129,7 +165,7 @@ def eb(g):
     return 1000 * (m + A * (r - m))
 tmi['tmi'] = tmi.groupby('uf', group_keys=False).apply(eb)
 tmi = tmi.drop(columns='uf')
-print('TMI Brasil 2022-2023:', round(1000 * tmi.obitos_inf.sum() / tmi.nascidos.sum(), 2))
+print('TMI Brasil', '2022-2024:' if OFICIAL else '2022-2023:', round(1000 * tmi.obitos_inf.sum() / tmi.nascidos.sum(), 2))
 base = base.merge(tmi, on='cod', how='left')
 
 base = base.drop(columns=['cod6'])

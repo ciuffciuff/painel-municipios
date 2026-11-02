@@ -12,9 +12,9 @@ População de referência: estimativa do IBGE para 2025 (usada como peso). A po
 
 | Dimensão | Indicador (coluna) | Fonte | Sentido |
 |---|---|---|---|
-| Saúde | Mortalidade infantil, por mil nascidos vivos, 2022–2023 (`tmi`) | SIM/SINASC, via IDSC-BR 2025; suavizada (Bayes empírico) | maior é pior |
+| Saúde | Mortalidade infantil, por mil nascidos vivos, 2022–2024 (`tmi`) | SIM-DOINF e SINASC (DATASUS), coleta direta; suavizada (Bayes empírico) | maior é pior |
 | Saúde | Cobertura da Saúde da Família, % (`cob_esf`) | e-Gestor AB, mar/2023, via IDSC-BR 2025 | maior é melhor |
-| Saúde | UBS por 10 mil habitantes (`ubs_10k`) | CNES e população 2025 | maior é melhor |
+| Saúde | UBS por 10 mil habitantes (`ubs_10k`) | CNES-ST de set/2026 (tipos 01 e 02) e população 2025 (SIDRA 6579), coleta direta | maior é melhor |
 | Saúde | Distância ao município com hospital mais próximo, km (`dist_hospital_km`) | CNES, entre pontos centrais dos municípios | maior é pior |
 | Educação | Alfabetização de 15 anos ou mais, % (`alfab`) | Censo 2022 | maior é melhor |
 | Educação | IDEB 2025, anos iniciais, rede pública (`ideb_ai`) | INEP | maior é melhor |
@@ -25,7 +25,7 @@ População de referência: estimativa do IBGE para 2025 (usada como peso). A po
 | Renda | Vínculos formais privados por mil habitantes (`emprego_1000`) | RAIS 2024, ativos em 31/12, setor "Empresas" | maior é melhor |
 | Renda | Domicílios com família no Bolsa Família, % (`bf_cob`) | Portal da Transparência, ago/2026, ÷ domicílios do Censo | maior é pior |
 
-**Mortalidade infantil:** o IDSC-BR traz a taxa anual por município (óbitos de menores de 1 ano ÷ nascidos vivos × 1.000). Para cada ano, os óbitos são reconstituídos como taxa × nascidos vivos (SINASC) e somados em 2022–2023; a taxa nacional resultante é 12,6 por mil, igual à do DATASUS. Como 285 municípios têm menos de 50 nascimentos no biênio, a taxa usada (`tmi`) é a suavizada pelo estimador bayesiano empírico global de Marshall (1991), por estado: `tmi = m + A·(r − m)`, com `A = s² / (s² + m/n)`, em que `m` é a taxa do estado, `r` a taxa bruta, `n` os nascidos vivos e `s²` a variância entre municípios descontada do ruído. A taxa bruta fica em `tmi_bruta`.
+**Mortalidade infantil:** óbitos de menores de 1 ano (SIM-DOINF) ÷ nascidos vivos (SINASC) × 1.000, por município de residência, com 2022, 2023 e 2024 somados (`R/coleta_oficial.R`, pacote microdatasus). A junção com a base usa o código de 6 dígitos (`cod // 10`). A taxa nacional resultante é 12,6 por mil. Como 84 municípios têm menos de 50 nascimentos no triênio, a taxa usada (`tmi`) é a suavizada pelo estimador bayesiano empírico global de Marshall (1991), por estado: `tmi = m + A·(r − m)`, com `A = s² / (s² + m/n)`, em que `m` é a taxa do estado, `r` a taxa bruta, `n` os nascidos vivos e `s²` a variância entre municípios descontada do ruído. A taxa bruta fica em `tmi_bruta`. Com `OFICIAL=0`, `python/build_data.py` refaz a versão anterior (IDSC-BR, 2022–2023).
 
 **Cobertura da Saúde da Família:** população atendida por equipes de Saúde da Família ÷ população, última série do e-Gestor AB (março de 2023). Mede equipes, não atendimento efetivo.
 
@@ -66,13 +66,13 @@ O índice vai de 0 a 100: quanto maior, mais perto da pior situação e mais pri
 
 | k | Silhueta |
 |---|---|
-| 3 | 0,26 |
-| 4 | 0,21 |
-| 5 | 0,18 |
-| **6** | **0,17** |
-| 7 | 0,16 |
-| 8 | 0,16 |
-| 9 | 0,16 |
+| 3 | 0,21 |
+| 4 | 0,16 |
+| 5 | 0,14 |
+| **6** | **0,14** |
+| 7 | 0,13 |
+| 8 | 0,13 |
+| 9 | 0,13 |
 
 A silhueta é baixa para qualquer k: as necessidades variam de forma contínua no território, e os perfis devem ser lidos como faixas desse contínuo, não como grupos isolados. O k = 3 tem a maior silhueta, mas mistura situações que pedem políticas diferentes (por exemplo, grandes centros com lacuna em atenção primária e interior sem esgotamento). O k = 6 foi escolhido pela interpretabilidade para política pública. Essa escolha é um julgamento e pode ser revista.
 

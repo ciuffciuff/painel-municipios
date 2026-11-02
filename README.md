@@ -18,12 +18,12 @@ Painel interativo:
 
 | Perfil | Nome | Municípios |
 |---|---|---|
-| 1 | Consolidados, com atenção primária a reforçar | 1.107 |
-| 2 | Grandes centros com lacuna na atenção primária | 840 |
-| 3 | Interior com déficit de esgotamento e longe de hospital | 996 |
-| 4 | Vulnerabilidade de renda e educação com infraestrutura intermediária | 876 |
-| 5 | Vulnerabilidade múltipla com isolamento geográfico | 676 |
-| 6 | Vulnerabilidade social aguda | 1.075 |
+| 1 | Consolidados, com atenção primária a reforçar | 1.150 |
+| 2 | Grandes centros com lacuna na atenção primária | 707 |
+| 3 | Interior com déficit de esgotamento e longe de hospital | 1.089 |
+| 4 | Vulnerabilidade de renda e educação com infraestrutura intermediária | 786 |
+| 5 | Vulnerabilidade múltipla com baixo acesso a saneamento | 1.053 |
+| 6 | Vulnerabilidade social aguda e maior mortalidade infantil | 785 |
 
 ## Estrutura
 
@@ -72,19 +72,19 @@ python python/geo.py                # malhas em SVG
 python python/out_build.py          # arquivos finais de dados/
 ```
 
-Feito a partir de `fontes/` recém-baixado, o pipeline gera arquivos idênticos aos de `dados/`. Se algum repositório de origem for atualizado, os números podem mudar.
+Feito a partir de `fontes/` recém-baixado e de `dados/oficial/` (coleta direta nas fontes oficiais, ver [FONTES.md](FONTES.md)), o pipeline gera arquivos idênticos aos de `dados/`. Se algum repositório de origem for atualizado, os números podem mudar.
 
 ## Fontes
 
-IBGE (Censo 2022, estimativas de população 2025, PIB dos Municípios 2023, malha municipal), INEP (IDEB 2025), Ministério da Saúde (SIM e SINASC 2022–2023; e-Gestor AB, mar/2023; CNES: UBS e hospitais), Ministério das Cidades (SINISA 2023), Instituto Cidades Sustentáveis (base IDSC-BR 2025), MTE/RAIS 2024, CGU/Portal da Transparência (Novo Bolsa Família, ago/2026) e TSE (eleição presidencial de 2022 e 2026). Detalhes, arquivos e links em [FONTES.md](FONTES.md).
+IBGE (Censo 2022, estimativas de população 2025, PIB dos Municípios 2023, malha municipal), INEP (IDEB 2025), Ministério da Saúde (SIM e SINASC 2022–2024; e-Gestor AB, mar/2023; CNES, set/2026: UBS e hospitais), Ministério das Cidades (SINISA 2023), Instituto Cidades Sustentáveis (base IDSC-BR 2025), MTE/RAIS 2024, CGU/Portal da Transparência (Novo Bolsa Família, ago/2026) e TSE (eleição presidencial de 2022 e 2026). Detalhes, arquivos e links em [FONTES.md](FONTES.md).
 
 ## Limitações
 
-- A mortalidade infantil é instável em municípios pequenos: somamos 2022 e 2023 e aplicamos suavização bayesiana empírica em direção à taxa do estado (a taxa bruta fica em `tmi_bruta`).
+- A mortalidade infantil é instável em municípios pequenos: somamos 2022 a 2024 e aplicamos suavização bayesiana empírica em direção à taxa do estado (a taxa bruta fica em `tmi_bruta`).
 - O esgoto continua do Censo 2022: o SINISA não tem 2.265 municípios e conta só a rede coletora.
 - O IDEB falta em 251 municípios; foi usada a mediana do estado (no DF, a da região).
 - Os custos por unidade de déficit no modelo (R$ 300, 250, 900 e 500) são hipóteses para comparar cenários, não estimativas orçamentárias.
-- A silhueta do k-means é baixa (0,17): as necessidades variam de forma contínua e os perfis são faixas desse contínuo.
+- A silhueta do k-means é baixa (0,14 com k = 6): as necessidades variam de forma contínua e os perfis são faixas desse contínuo.
 - As votações não entram no agrupamento, no índice nem na alocação (princípio da impessoalidade, art. 37 da Constituição).
 
 ## Licença

@@ -100,7 +100,7 @@
                 <option value="nec_renda">Renda, emprego e assistência</option>
               </optgroup>
               <optgroup label="Indicadores">
-                <option value="tmi">Mortalidade infantil 2022–2023 (por mil nascidos vivos)</option>
+                <option value="tmi">Mortalidade infantil 2022–2024 (por mil nascidos vivos)</option>
                 <option value="cob_esf">Cobertura da Saúde da Família, e-Gestor (%)</option>
                 <option value="ubs_10k">UBS por 10 mil habitantes</option>
                 <option value="alfab">Taxa de alfabetização, 15 anos ou mais (%)</option>
@@ -371,7 +371,7 @@
       <div class="card">
         <h2>Como o painel foi construído</h2>
         <ol>
-          <li><b>Indicadores (12).</b> Saúde: mortalidade infantil (óbitos de menores de 1 ano por mil nascidos vivos, SIM/SINASC, 2022 e 2023 somados e suavizada por Bayes empírico em direção à taxa do estado), cobertura da Saúde da Família (e-Gestor AB, março de 2023), UBS por 10 mil habitantes e distância aproximada ao município com hospital mais próximo. Educação: alfabetização de 15 anos ou mais (Censo 2022) e IDEB 2025 dos anos iniciais da rede pública. Saneamento: população atendida com abastecimento de água por rede (SINISA 2023; Censo 2022 nos 48 municípios sem informação), domicílios com esgoto por rede ou fossa séptica e com coleta de lixo (Censo 2022). Renda: renda domiciliar per capita média (Censo 2022), empregos formais privados por mil habitantes (RAIS 2024) e domicílios atendidos pelo Bolsa Família (ago/2026).</li>
+          <li><b>Indicadores (12).</b> Saúde: mortalidade infantil (óbitos de menores de 1 ano por mil nascidos vivos, SIM/SINASC, 2022 a 2024 somados e suavizada por Bayes empírico em direção à taxa do estado), cobertura da Saúde da Família (e-Gestor AB, março de 2023), UBS por 10 mil habitantes (CNES, setembro de 2026) e distância aproximada ao município com hospital mais próximo. Educação: alfabetização de 15 anos ou mais (Censo 2022) e IDEB 2025 dos anos iniciais da rede pública. Saneamento: população atendida com abastecimento de água por rede (SINISA 2023; Censo 2022 nos 48 municípios sem informação), domicílios com esgoto por rede ou fossa séptica e com coleta de lixo (Censo 2022). Renda: renda domiciliar per capita média (Censo 2022), empregos formais privados por mil habitantes (RAIS 2024) e domicílios atendidos pelo Bolsa Família (ago/2026).</li>
           <li><b>Necessidade.</b> Cada indicador vira uma posição percentual entre os municípios (0 = melhor do país, 100 = pior), já com o sentido corrigido. A necessidade de uma dimensão é a média dos seus indicadores.</li>
           <li><b>TOPSIS.</b> Distância de cada município à situação ideal e à pior situação nas 12 medidas, com peso igual para cada dimensão. O índice vai de 0 a 100; quanto maior, mais prioritário.</li>
           <li><b>k-means.</b> Agrupamento das 12 medidas padronizadas, com k = 6 e 50 inicializações. A silhueta é baixa para qualquer k (tabela ao lado): as necessidades variam de forma contínua, e os perfis são faixas de um contínuo, não grupos isolados. O k = 6 foi escolhido por separar perfis com recomendações de política diferentes; k = 3 tem a maior silhueta, mas junta situações distintas.</li>
@@ -395,21 +395,21 @@
           <li>IBGE, Censo Demográfico 2022: população, alfabetização, saneamento e rendimento (SIDRA 10295).</li>
           <li>IBGE, estimativas de população 2025 e PIB dos Municípios 2023.</li>
           <li>INEP, IDEB 2025 por município.</li>
-          <li>Ministério da Saúde, SIM e SINASC: óbitos infantis e nascidos vivos, 2022 e 2023.</li>
+          <li>Ministério da Saúde, SIM e SINASC: óbitos infantis e nascidos vivos, 2022 a 2024 (DATASUS, microdados).</li>
           <li>Ministério da Saúde, e-Gestor AB: cobertura da Saúde da Família (março de 2023); CNES: UBS e hospitais.</li>
           <li>Ministério das Cidades, SINISA 2023: população atendida com abastecimento de água.</li>
-          <li>Instituto Cidades Sustentáveis, IDSC-BR 2025: base que reúne a mortalidade infantil, a cobertura da Saúde da Família e o abastecimento de água por município.</li>
+          <li>Instituto Cidades Sustentáveis, IDSC-BR 2025: base que reúne a cobertura da Saúde da Família, a alfabetização e o abastecimento de água por município.</li>
           <li>MTE, RAIS 2024: vínculos formais ativos em 31/12.</li>
           <li>CGU, Portal da Transparência: pagamentos do Novo Bolsa Família (agosto de 2026).</li>
           <li>TSE, resultados da eleição presidencial de 2022 e 2026 por município.</li>
           <li>Malha municipal do IBGE simplificada.</li>
         </ul>
-        <p class="muted">Os dados oficiais foram obtidos de repositórios públicos no GitHub que os redistribuem já agregados por município: tcc-fea-usp-gasto-publico-educacao-saeb-ideb, saude-brasil-insights, aps-cnes-ine, idsc-analysis (base do IDSC-BR 2025), painel-epidemiologico-saude-materna (nascidos vivos do SINASC), Saneamento-censo-2022-Analise_de_Dados, analise-bolsa-familia, projeto-bi-pib-municipios, rafapolo/rais e brasil-eleicoes-para-presidente-2022-2026. As somas nacionais das eleições conferem com os totais divulgados pelo TSE.</p>
+        <p class="muted">Mortalidade infantil, UBS e hospitais (CNES), população 2025, renda per capita e votos foram coletados direto no DATASUS, no IBGE (SIDRA) e no TSE em novembro de 2026, pelo GitHub Actions do repositório. Os demais dados vêm de repositórios públicos no GitHub que redistribuem bases oficiais já agregadas por município: tcc-fea-usp-gasto-publico-educacao-saeb-ideb, saude-brasil-insights (distância ao hospital), idsc-analysis (base do IDSC-BR 2025), Saneamento-censo-2022-Analise_de_Dados, analise-bolsa-familia, projeto-bi-pib-municipios e rafapolo/rais; brasil-eleicoes-para-presidente-2022-2026 fornece a abstenção e a correspondência entre os códigos de município do TSE e do IBGE. As somas nacionais das eleições conferem com os totais divulgados pelo TSE.</p>
       </div>
       <div class="card">
         <h2>Limitações</h2>
         <ul>
-          <li>A mortalidade infantil por município vem do IDSC-BR, que a calcula a partir do SIM e do SINASC. Os óbitos de cada ano foram reconstituídos como taxa × nascidos vivos para somar 2022 e 2023; a taxa nacional resultante, 12,6 por mil, confere com o DATASUS. Mesmo somando dois anos, 285 municípios têm menos de 50 nascimentos, por isso a taxa foi suavizada em direção à do estado (a taxa bruta aparece no detalhe do município).</li>
+          <li>A mortalidade infantil soma os óbitos de menores de 1 ano (SIM) e os nascidos vivos (SINASC) de 2022 a 2024, por município de residência; a taxa nacional é de 12,6 por mil. Mesmo somando três anos, 84 municípios têm menos de 50 nascimentos, por isso a taxa foi suavizada em direção à do estado (a taxa bruta aparece no detalhe do município).</li>
           <li>O esgoto continua do Censo 2022: no SINISA faltam 2.265 municípios e só se conta a rede coletora, o que trataria a fossa séptica, solução adequada em áreas pequenas, como ausência de esgoto.</li>
           <li>O IDEB não existe para 251 municípios (participação insuficiente no Saeb). Nesses casos foi usada a mediana do estado; no Distrito Federal, a da região.</li>
           <li>A cobertura da Saúde da Família é a última divulgada no e-Gestor (março de 2023), antes da mudança de metodologia do Ministério da Saúde; mede equipes, não atendimento efetivo.</li>
