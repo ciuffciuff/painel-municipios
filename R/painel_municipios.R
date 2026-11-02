@@ -26,6 +26,7 @@ glimpse(mun)   # 5.570 linhas, uma por município
 # -----------------------------------------------------------------------------
 ind <- tribble(
   ~var,               ~dim,          ~sentido,
+  "tmi",              "saude",       -1,   # mortalidade infantil 2022–2023 (suavizada)
   "cob_esf",          "saude",        1,
   "ubs_10k",          "saude",        1,
   "dist_hospital_km", "saude",       -1,
@@ -139,22 +140,25 @@ vars$gasto_mi <- vars$y * vars$custo
 alocacao <- vars |> group_by(regiao, politica) |> summarise(gasto_bi = sum(gasto_mi) / 1e3, .groups = "drop")
 alocacao |> pivot_wider(names_from = politica, values_from = gasto_bi) |> print()
 cat("Total alocado (R$ bi):", sum(vars$gasto_mi) / 1e3, "\n")
-cat("Objetivo:", sol$objval, " (o painel e o Python dão 86.056,5)\n")
+cat("Objetivo:", sol$objval, " (o painel e o Python dão 80.271,6)\n")
 
 # Preço-sombra do orçamento: ganho no objetivo por R$ 1 milhão a mais
 sol2 <- lp("max", vars$valor, do.call(rbind, A), dir, rhs, compute.sens = TRUE)
 cat("Preço-sombra do orçamento:", sol2$duals[1], "\n")
 
 # -----------------------------------------------------------------------------
-# 8. Próximo passo: incluir a mortalidade infantil (SIM + SINASC)
-#    Precisa de internet para o FTP do DATASUS. Exemplo:
+# 8. Mortalidade infantil: já está na base (colunas tmi, tmi_bruta, obitos_inf, nascidos)
+#    Para recalcular direto do DATASUS (precisa de internet para o FTP):
 # -----------------------------------------------------------------------------
 # install.packages("remotes"); remotes::install_github("rfsaldanha/microdatasus")
 # library(microdatasus)
-# obitos <- fetch_datasus(year_start = 2023, year_end = 2023, information_system = "SIM-DOINF")
-# nasc   <- fetch_datasus(year_start = 2023, year_end = 2023, information_system = "SINASC")
+# obitos <- fetch_datasus(year_start = 2022, year_end = 2023, information_system = "SIM-DOINF")
+# nasc   <- fetch_datasus(year_start = 2022, year_end = 2023, information_system = "SINASC")
 # tmi <- count(obitos, cod6 = as.integer(CODMUNRES), name = "obitos") |>
 #   left_join(count(nasc, cod6 = as.integer(CODMUNRES), name = "nascidos"), by = "cod6") |>
-#   mutate(tmi = 1000 * obitos / nascidos)
-# mun <- mun |> mutate(cod6 = cod %/% 10) |> left_join(tmi, by = "cod6")
-# Em municípios pequenos a taxa oscila muito: use a média de 3 anos (2021–2023).
+#   mutate(tmi_bruta = 1000 * obitos / nascidos)
+# Suavização bayesiana empírica (Marshall, 1991), por estado:
+# tmi <- tmi |> mutate(uf = cod6 %/% 10000) |> group_by(uf) |>
+#   mutate(r = obitos / nascidos, m = sum(obitos) / sum(nascidos),
+#          s2 = pmax(sum(nascidos * (r - m)^2) / sum(nascidos) - m / mean(nascidos), 0),
+#          tmi = 1000 * (m + s2 / (s2 + m / nascidos) * (r - m))) |> ungroup()

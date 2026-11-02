@@ -12,19 +12,24 @@ População de referência: estimativa do IBGE para 2025 (usada como peso). A po
 
 | Dimensão | Indicador (coluna) | Fonte | Sentido |
 |---|---|---|---|
-| Saúde | Cobertura estimada da Saúde da Família, % (`cob_esf`) | CNES, equipes eSF não desativadas, competência out/2026 | maior é melhor |
+| Saúde | Mortalidade infantil, por mil nascidos vivos, 2022–2023 (`tmi`) | SIM/SINASC, via IDSC-BR 2025; suavizada (Bayes empírico) | maior é pior |
+| Saúde | Cobertura da Saúde da Família, % (`cob_esf`) | e-Gestor AB, mar/2023, via IDSC-BR 2025 | maior é melhor |
 | Saúde | UBS por 10 mil habitantes (`ubs_10k`) | CNES e população 2025 | maior é melhor |
 | Saúde | Distância ao município com hospital mais próximo, km (`dist_hospital_km`) | CNES, entre pontos centrais dos municípios | maior é pior |
 | Educação | Alfabetização de 15 anos ou mais, % (`alfab`) | Censo 2022 | maior é melhor |
 | Educação | IDEB 2025, anos iniciais, rede pública (`ideb_ai`) | INEP | maior é melhor |
-| Saneamento | Domicílios com água da rede geral como forma principal, % (`agua_rede`) | Censo 2022 | maior é melhor |
+| Saneamento | População atendida com abastecimento de água, % (`agua_rede`) | SINISA 2023 (IAG0001), via IDSC-BR 2025; Censo 2022 em 48 municípios (`agua_fonte`) | maior é melhor |
 | Saneamento | Domicílios com esgoto por rede geral, pluvial ou fossa séptica, % (`esgoto_adeq`) | Censo 2022 | maior é melhor |
 | Saneamento | Domicílios com lixo coletado, % (`lixo_coleta`) | Censo 2022 | maior é melhor |
 | Renda | Rendimento domiciliar per capita médio, R$ (`renda_pc`) | Censo 2022 (SIDRA 10295) | maior é melhor |
 | Renda | Vínculos formais privados por mil habitantes (`emprego_1000`) | RAIS 2024, ativos em 31/12, setor "Empresas" | maior é melhor |
 | Renda | Domicílios com família no Bolsa Família, % (`bf_cob`) | Portal da Transparência, ago/2026, ÷ domicílios do Censo | maior é pior |
 
-**Cobertura da Saúde da Família:** número de equipes eSF × 3.450 pessoas ÷ população 2025, limitada a 100%. O parâmetro de 3.450 pessoas por equipe é a referência clássica do Ministério da Saúde. A medida indica capacidade instalada, não atendimento efetivo.
+**Mortalidade infantil:** o IDSC-BR traz a taxa anual por município (óbitos de menores de 1 ano ÷ nascidos vivos × 1.000). Para cada ano, os óbitos são reconstituídos como taxa × nascidos vivos (SINASC) e somados em 2022–2023; a taxa nacional resultante é 12,6 por mil, igual à do DATASUS. Como 285 municípios têm menos de 50 nascimentos no biênio, a taxa usada (`tmi`) é a suavizada pelo estimador bayesiano empírico global de Marshall (1991), por estado: `tmi = m + A·(r − m)`, com `A = s² / (s² + m/n)`, em que `m` é a taxa do estado, `r` a taxa bruta, `n` os nascidos vivos e `s²` a variância entre municípios descontada do ruído. A taxa bruta fica em `tmi_bruta`.
+
+**Cobertura da Saúde da Família:** população atendida por equipes de Saúde da Família ÷ população, última série do e-Gestor AB (março de 2023). Mede equipes, não atendimento efetivo.
+
+**Água e esgoto:** a água passou a vir do SINISA (população atendida por rede). O esgoto continua do Censo 2022 porque o SINISA não tem 2.265 municípios e conta só a rede coletora, o que trataria a fossa séptica como ausência de esgoto.
 
 **IDEB ausente:** 251 municípios não têm IDEB por participação insuficiente no Saeb. Nesses casos usamos a mediana do estado; no Distrito Federal, que é um município só, a da região Centro-Oeste. A coluna `ideb_imputado` marca esses casos.
 
@@ -44,7 +49,7 @@ Usar posições, e não os valores brutos, deixa os indicadores na mesma escala 
 
 O TOPSIS (Technique for Order Preference by Similarity to Ideal Solution) compara cada município com dois pontos de referência: a situação ideal (menor necessidade observada em cada indicador) e a pior situação (maior necessidade observada).
 
-1. Matriz X com as 11 necessidades em escala de 0 a 1.
+1. Matriz X com as 12 necessidades em escala de 0 a 1.
 2. Pesos: 1/4 para cada dimensão, dividido igualmente entre os indicadores da dimensão (por exemplo, cada indicador de saúde pesa 1/12).
 3. Matriz ponderada V = X × pesos.
 4. Distâncias euclidianas de cada município ao ideal (d⁺) e à pior situação (d⁻).
@@ -54,7 +59,7 @@ O índice vai de 0 a 100: quanto maior, mais perto da pior situação e mais pri
 
 ## 5. Perfis de necessidade (k-means)
 
-1. As 11 necessidades são padronizadas (média 0, desvio-padrão 1).
+1. As 12 necessidades são padronizadas (média 0, desvio-padrão 1).
 2. Testamos k de 3 a 9, com 20 inicializações cada, e calculamos a silhueta numa amostra de 4.000 municípios (`dados/selecao_k.csv`).
 3. Escolhemos k = 6 e rodamos o k-means com 50 inicializações (semente 42).
 4. Os grupos são renumerados de 1 (menor TOPSIS médio) a 6 (maior).
@@ -157,8 +162,8 @@ As votações **não** entram nos indicadores, no TOPSIS, no k-means nem na aloc
 
 ## 8. Limitações
 
-- Mortalidade infantil (SIM/SINASC) ainda não incluída (ver seção 8 do script em R).
-- Indicadores de anos diferentes (Censo 2022, RAIS 2024, IDEB 2025, CNES e Bolsa Família 2026).
+- Mortalidade infantil instável em municípios pequenos; a suavização puxa essas taxas para a média do estado.
+- Indicadores de anos diferentes (Censo 2022, mortalidade infantil 2022–2023, e-Gestor e SINISA 2023, RAIS 2024, IDEB 2025, CNES e Bolsa Família 2026).
 - Necessidade relativa, não absoluta.
 - Médias municipais escondem desigualdades dentro dos grandes municípios (perfil 2).
 - Custos e eficiências do modelo de alocação são hipóteses.

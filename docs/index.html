@@ -137,11 +137,12 @@ html, body { margin: 0; background: var(--color-bg); color: var(--color-fg); }
                 <option value="nec_renda">Renda, emprego e assistência</option>
               </optgroup>
               <optgroup label="Indicadores">
-                <option value="cob_esf">Cobertura estimada da Saúde da Família (%)</option>
+                <option value="tmi">Mortalidade infantil 2022–2023 (por mil nascidos vivos)</option>
+                <option value="cob_esf">Cobertura da Saúde da Família, e-Gestor (%)</option>
                 <option value="ubs_10k">UBS por 10 mil habitantes</option>
                 <option value="alfab">Taxa de alfabetização, 15 anos ou mais (%)</option>
                 <option value="ideb_ai">IDEB 2025, anos iniciais, rede pública</option>
-                <option value="agua_rede">Domicílios com água da rede geral (%)</option>
+                <option value="agua_rede">População atendida com água por rede (%)</option>
                 <option value="esgoto_adeq">Domicílios com esgoto adequado (%)</option>
                 <option value="lixo_coleta">Domicílios com coleta de lixo (%)</option>
                 <option value="renda_pc">Renda domiciliar per capita média (R$)</option>
@@ -198,7 +199,7 @@ html, body { margin: 0; background: var(--color-bg); color: var(--color-fg); }
 
   <!-- ================= PERFIS ================= -->
   <section id="perfis" data-page="perfis" hidden>
-    <p class="lede">O k-means separou os municípios em seis perfis a partir das 11 medidas de necessidade. Os perfis estão numerados do menos ao mais necessitado, pela média do índice TOPSIS. As políticas sugeridas são indicativas e devem ser validadas com as áreas setoriais.</p>
+    <p class="lede">O k-means separou os municípios em seis perfis a partir das 12 medidas de necessidade. Os perfis estão numerados do menos ao mais necessitado, pela média do índice TOPSIS. As políticas sugeridas são indicativas e devem ser validadas com as áreas setoriais.</p>
     <div class="grid" data-draw="perfis-cards" data-source="perfis">—</div>
     <div class="card" id="card-matriz">
       <h2>Indicadores típicos de cada perfil (mediana)</h2>
@@ -208,6 +209,7 @@ html, body { margin: 0; background: var(--color-bg); color: var(--color-fg); }
             <th data-field="grupo">Perfil</th>
             <th class="n" data-field="municipios">Municípios</th>
             <th class="n" data-field="pop_pct">População (%)</th>
+            <th class="n" data-field="tmi">Mort. infantil (‰)</th>
             <th class="n" data-field="cob_esf">Cobertura SF (%)</th>
             <th class="n" data-field="ubs_por_10k">UBS/10 mil</th>
             <th class="n" data-field="alfab">Alfabetização (%)</th>
@@ -250,7 +252,7 @@ html, body { margin: 0; background: var(--color-bg); color: var(--color-fg); }
   <section id="ranking" data-page="ranking" hidden>
     <div class="card" id="card-ranking">
       <h2>Municípios mais prioritários pelo TOPSIS</h2>
-      <p class="muted">O índice mede a proximidade do município à pior situação observada nas 11 medidas (100 = mais prioritário). Pesos iguais por dimensão. Até 300 municípios, filtrados pelo estado e pelo perfil.</p>
+      <p class="muted">O índice mede a proximidade do município à pior situação observada nas 12 medidas (100 = mais prioritário). Pesos iguais por dimensão. Até 300 municípios, filtrados pelo estado e pelo perfil.</p>
       <div class="controls">
         <label class="ctl">Estado
           <select class="ctl-uf" aria-label="Estado">
@@ -374,7 +376,7 @@ html, body { margin: 0; background: var(--color-bg); color: var(--color-fg); }
       <h2>O que os resultados mostram</h2>
       <ol>
         <li><b>A necessidade explica boa parte da geografia do voto.</b> A correlação entre o índice de prioridade e o voto em Lula no 2º turno de 2026 é de <b data-draw="el-r" data-source="eleicao_corr" data-field="r_lula_26" data-where="indicador=topsis">—</b>. Lula teve <b data-draw="el-q1" data-source="eleicao_quintil" data-field="lula_26_2t" data-where="quinto=1">—</b>% no quinto de municípios menos prioritários e <b data-draw="el-q5" data-source="eleicao_quintil" data-field="lula_26_2t" data-where="quinto=5">—</b>% no mais prioritário.</li>
-        <li><b>Renda e escolaridade pesam mais que saúde.</b> As associações mais fortes são com a renda per capita (<b data-draw="el-rr" data-source="eleicao_corr" data-field="r_lula_26" data-where="indicador=renda_pc">—</b>), a alfabetização (<b data-draw="el-ra" data-source="eleicao_corr" data-field="r_lula_26" data-where="indicador=alfab">—</b>) e a cobertura do Bolsa Família (<b data-draw="el-rb" data-source="eleicao_corr" data-field="r_lula_26" data-where="indicador=bf_cob">—</b>). A necessidade em saúde tem sinal contrário (<b data-draw="el-rs" data-source="eleicao_corr" data-field="r_lula_26" data-where="indicador=nec_saude">—</b>), porque a menor cobertura de atenção primária está nos grandes centros.</li>
+        <li><b>Renda e escolaridade pesam mais que saúde.</b> As associações mais fortes são com a renda per capita (<b data-draw="el-rr" data-source="eleicao_corr" data-field="r_lula_26" data-where="indicador=renda_pc">—</b>), a alfabetização (<b data-draw="el-ra" data-source="eleicao_corr" data-field="r_lula_26" data-where="indicador=alfab">—</b>) e a cobertura do Bolsa Família (<b data-draw="el-rb" data-source="eleicao_corr" data-field="r_lula_26" data-where="indicador=bf_cob">—</b>). A necessidade em saúde quase não se associa ao voto (<b data-draw="el-rs" data-source="eleicao_corr" data-field="r_lula_26" data-where="indicador=nec_saude">—</b>) porque junta sinais opostos: a mortalidade infantil é maior onde Lula teve mais votos (<b data-draw="el-rt" data-source="eleicao_corr" data-field="r_lula_26" data-where="indicador=tmi">—</b>), mas a menor cobertura de atenção primária está nos grandes centros.</li>
         <li><b>Lula ganhou no total, mas perdeu na maioria dos municípios.</b> Entre 2022 e 2026 a votação de Lula no 2º turno variou <b data-draw="el-vt" data-source="eleicao_resumo" data-field="variacao_total">—</b> p.p. no total de votos, mas caiu em <b data-draw="el-pq" data-source="eleicao_resumo" data-field="pct_mun_queda">—</b>% dos municípios (mediana de <b data-draw="el-vm" data-source="eleicao_resumo" data-field="variacao_mediana">—</b> p.p.). O ganho veio dos grandes centros (perfil 2, <b data-draw="el-v2" data-source="eleicao_perfil" data-field="variacao" data-where="grupo=2">—</b> p.p.), que concentram a maior parte dos eleitores.</li>
         <li><b>A virada a favor de Flávio Bolsonaro foi no interior.</b> <b data-draw="el-vf" data-source="eleicao_resumo" data-field="viraram_flavio">—</b> municípios passaram de Lula para Flávio Bolsonaro e <b data-draw="el-vl" data-source="eleicao_resumo" data-field="viraram_lula">—</b> fizeram o caminho inverso. A maior queda de Lula foi no perfil 3, interior do Sul, Sudeste e Centro-Oeste (<b data-draw="el-v3" data-source="eleicao_perfil" data-field="variacao" data-where="grupo=3">—</b> p.p.). A variação tem correlação de <b data-draw="el-rsw" data-source="eleicao_corr" data-field="r_variacao" data-where="indicador=esgoto_adeq">—</b> com o esgoto adequado: Lula perdeu menos onde o saneamento é melhor.</li>
       </ol>
@@ -406,10 +408,10 @@ html, body { margin: 0; background: var(--color-bg); color: var(--color-fg); }
       <div class="card">
         <h2>Como o painel foi construído</h2>
         <ol>
-          <li><b>Indicadores (11).</b> Saúde: cobertura estimada da Saúde da Família (equipes eSF ativas no CNES × 3.450 pessoas ÷ população, limitada a 100%), UBS por 10 mil habitantes e distância aproximada ao município com hospital mais próximo. Educação: alfabetização de 15 anos ou mais (Censo 2022) e IDEB 2025 dos anos iniciais da rede pública. Saneamento: domicílios com água da rede geral, com esgoto por rede ou fossa séptica e com coleta de lixo (Censo 2022). Renda: renda domiciliar per capita média (Censo 2022), empregos formais privados por mil habitantes (RAIS 2024) e domicílios atendidos pelo Bolsa Família (ago/2026).</li>
+          <li><b>Indicadores (12).</b> Saúde: mortalidade infantil (óbitos de menores de 1 ano por mil nascidos vivos, SIM/SINASC, 2022 e 2023 somados e suavizada por Bayes empírico em direção à taxa do estado), cobertura da Saúde da Família (e-Gestor AB, março de 2023), UBS por 10 mil habitantes e distância aproximada ao município com hospital mais próximo. Educação: alfabetização de 15 anos ou mais (Censo 2022) e IDEB 2025 dos anos iniciais da rede pública. Saneamento: população atendida com abastecimento de água por rede (SINISA 2023; Censo 2022 nos 48 municípios sem informação), domicílios com esgoto por rede ou fossa séptica e com coleta de lixo (Censo 2022). Renda: renda domiciliar per capita média (Censo 2022), empregos formais privados por mil habitantes (RAIS 2024) e domicílios atendidos pelo Bolsa Família (ago/2026).</li>
           <li><b>Necessidade.</b> Cada indicador vira uma posição percentual entre os municípios (0 = melhor do país, 100 = pior), já com o sentido corrigido. A necessidade de uma dimensão é a média dos seus indicadores.</li>
-          <li><b>TOPSIS.</b> Distância de cada município à situação ideal e à pior situação nas 11 medidas, com peso igual para cada dimensão. O índice vai de 0 a 100; quanto maior, mais prioritário.</li>
-          <li><b>k-means.</b> Agrupamento das 11 medidas padronizadas, com k = 6 e 50 inicializações. A silhueta é baixa para qualquer k (tabela ao lado): as necessidades variam de forma contínua, e os perfis são faixas de um contínuo, não grupos isolados. O k = 6 foi escolhido por separar perfis com recomendações de política diferentes; k = 3 tem a maior silhueta, mas junta situações distintas.</li>
+          <li><b>TOPSIS.</b> Distância de cada município à situação ideal e à pior situação nas 12 medidas, com peso igual para cada dimensão. O índice vai de 0 a 100; quanto maior, mais prioritário.</li>
+          <li><b>k-means.</b> Agrupamento das 12 medidas padronizadas, com k = 6 e 50 inicializações. A silhueta é baixa para qualquer k (tabela ao lado): as necessidades variam de forma contínua, e os perfis são faixas de um contínuo, não grupos isolados. O k = 6 foi escolhido por separar perfis com recomendações de política diferentes; k = 3 tem a maior silhueta, mas junta situações distintas.</li>
           <li><b>Programação linear.</b> Déficit de um grupo numa política = soma de população × necessidade/100 dos seus municípios ("pessoas-equivalentes"). A alocação maximiza a redução do déficit ponderada pelo peso da política e pela intensidade da necessidade (expoente de aversão à desigualdade), sujeita a orçamento, pisos por política, piso regional e teto de absorção por habitante. A formulação de equidade primeiro maximiza a menor fração de déficit reduzida entre todos os grupos e políticas e depois usa a sobra com eficiência (otimização lexicográfica). Dentro de cada grupo, o recurso de cada política é repartido entre os municípios em proporção a população × necessidade.</li>
           <li><b>Análise eleitoral.</b> Percentuais nos votos válidos de Lula e do principal adversário em cada turno, agregados por perfil, região e quinto de prioridade com peso pelos votos válidos de cada município. As correlações são de Pearson, entre municípios, com o % de Lula no 2º turno de 2026 e com a variação de Lula entre 2022 e 2026. Os votos não entram em nenhum cálculo de necessidade, prioridade ou alocação. As associações são ecológicas (entre municípios) e não indicam causa.</li>
         </ol>
@@ -430,20 +432,24 @@ html, body { margin: 0; background: var(--color-bg); color: var(--color-fg); }
           <li>IBGE, Censo Demográfico 2022: população, alfabetização, saneamento e rendimento (SIDRA 10295).</li>
           <li>IBGE, estimativas de população 2025 e PIB dos Municípios 2023.</li>
           <li>INEP, IDEB 2025 por município.</li>
-          <li>Ministério da Saúde, CNES: equipes de Saúde da Família (competência de outubro de 2026), UBS e hospitais.</li>
+          <li>Ministério da Saúde, SIM e SINASC: óbitos infantis e nascidos vivos, 2022 e 2023.</li>
+          <li>Ministério da Saúde, e-Gestor AB: cobertura da Saúde da Família (março de 2023); CNES: UBS e hospitais.</li>
+          <li>Ministério das Cidades, SINISA 2023: população atendida com abastecimento de água.</li>
+          <li>Instituto Cidades Sustentáveis, IDSC-BR 2025: base que reúne a mortalidade infantil, a cobertura da Saúde da Família e o abastecimento de água por município.</li>
           <li>MTE, RAIS 2024: vínculos formais ativos em 31/12.</li>
           <li>CGU, Portal da Transparência: pagamentos do Novo Bolsa Família (agosto de 2026).</li>
           <li>TSE, resultados da eleição presidencial de 2022 e 2026 por município.</li>
           <li>Malha municipal do IBGE simplificada.</li>
         </ul>
-        <p class="muted">Os dados oficiais foram obtidos de repositórios públicos no GitHub que os redistribuem já agregados por município: tcc-fea-usp-gasto-publico-educacao-saeb-ideb, saude-brasil-insights, aps-cnes-ine, Saneamento-censo-2022-Analise_de_Dados, analise-bolsa-familia, projeto-bi-pib-municipios, rafapolo/rais e brasil-eleicoes-para-presidente-2022-2026. As somas nacionais das eleições conferem com os totais divulgados pelo TSE.</p>
+        <p class="muted">Os dados oficiais foram obtidos de repositórios públicos no GitHub que os redistribuem já agregados por município: tcc-fea-usp-gasto-publico-educacao-saeb-ideb, saude-brasil-insights, aps-cnes-ine, idsc-analysis (base do IDSC-BR 2025), painel-epidemiologico-saude-materna (nascidos vivos do SINASC), Saneamento-censo-2022-Analise_de_Dados, analise-bolsa-familia, projeto-bi-pib-municipios, rafapolo/rais e brasil-eleicoes-para-presidente-2022-2026. As somas nacionais das eleições conferem com os totais divulgados pelo TSE.</p>
       </div>
       <div class="card">
         <h2>Limitações</h2>
         <ul>
-          <li>A mortalidade infantil (SIM/SINASC) não entrou: o servidor que gerou o painel não acessa o DATASUS. O script em R entregue junto mostra como incluí-la com o pacote microdatasus.</li>
+          <li>A mortalidade infantil por município vem do IDSC-BR, que a calcula a partir do SIM e do SINASC. Os óbitos de cada ano foram reconstituídos como taxa × nascidos vivos para somar 2022 e 2023; a taxa nacional resultante, 12,6 por mil, confere com o DATASUS. Mesmo somando dois anos, 285 municípios têm menos de 50 nascimentos, por isso a taxa foi suavizada em direção à do estado (a taxa bruta aparece no detalhe do município).</li>
+          <li>O esgoto continua do Censo 2022: no SINISA faltam 2.265 municípios e só se conta a rede coletora, o que trataria a fossa séptica, solução adequada em áreas pequenas, como ausência de esgoto.</li>
           <li>O IDEB não existe para 251 municípios (participação insuficiente no Saeb). Nesses casos foi usada a mediana do estado; no Distrito Federal, a da região.</li>
-          <li>A cobertura da Saúde da Família é estimada pelo parâmetro clássico de 3.450 pessoas por equipe; não mede atendimento efetivo.</li>
+          <li>A cobertura da Saúde da Família é a última divulgada no e-Gestor (março de 2023), antes da mudança de metodologia do Ministério da Saúde; mede equipes, não atendimento efetivo.</li>
           <li>A distância ao hospital é calculada entre os pontos centrais dos municípios.</li>
           <li>Boa Esperança do Norte (MT), criado depois do Censo 2022, fica fora da análise.</li>
           <li>Os custos por unidade de déficit e as eficiências dos segmentos são hipóteses de trabalho. Antes de usar a alocação em decisão real, devem ser calibrados com custos de programas (por exemplo, custo por ligação de esgoto ou por equipe de saúde).</li>

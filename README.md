@@ -8,7 +8,7 @@ Painel interativo:
 
 ## O que o projeto faz
 
-1. **Indicadores (11).** Saúde: cobertura estimada da Saúde da Família, UBS por 10 mil habitantes, distância ao hospital. Educação: alfabetização de 15 anos ou mais e IDEB 2025 (anos iniciais). Saneamento: água da rede geral, esgoto adequado e coleta de lixo. Renda: renda domiciliar per capita, empregos formais privados por mil habitantes e domicílios no Bolsa Família.
+1. **Indicadores (12).** Saúde: mortalidade infantil 2022–2023 (SIM/SINASC), cobertura da Saúde da Família (e-Gestor), UBS por 10 mil habitantes, distância ao hospital. Educação: alfabetização de 15 anos ou mais e IDEB 2025 (anos iniciais). Saneamento: população atendida com água por rede (SINISA 2023), esgoto adequado e coleta de lixo. Renda: renda domiciliar per capita, empregos formais privados por mil habitantes e domicílios no Bolsa Família.
 2. **Necessidade.** Cada indicador vira uma posição percentual entre os municípios (0 = melhor do país, 100 = pior). A necessidade de uma dimensão é a média dos seus indicadores.
 3. **TOPSIS.** Índice de prioridade de 0 a 100, com peso igual por dimensão.
 4. **k-means.** Seis perfis de necessidade, numerados do menos ao mais necessitado.
@@ -76,11 +76,12 @@ Feito a partir de `fontes/` recém-baixado, o pipeline gera arquivos idênticos 
 
 ## Fontes
 
-IBGE (Censo 2022, estimativas de população 2025, PIB dos Municípios 2023, malha municipal), INEP (IDEB 2025), Ministério da Saúde/CNES (equipes de Saúde da Família, out/2026; UBS e hospitais), MTE/RAIS 2024, CGU/Portal da Transparência (Novo Bolsa Família, ago/2026) e TSE (eleição presidencial de 2022 e 2026). Detalhes, arquivos e links em [FONTES.md](FONTES.md).
+IBGE (Censo 2022, estimativas de população 2025, PIB dos Municípios 2023, malha municipal), INEP (IDEB 2025), Ministério da Saúde (SIM e SINASC 2022–2023; e-Gestor AB, mar/2023; CNES: UBS e hospitais), Ministério das Cidades (SINISA 2023), Instituto Cidades Sustentáveis (base IDSC-BR 2025), MTE/RAIS 2024, CGU/Portal da Transparência (Novo Bolsa Família, ago/2026) e TSE (eleição presidencial de 2022 e 2026). Detalhes, arquivos e links em [FONTES.md](FONTES.md).
 
 ## Limitações
 
-- A mortalidade infantil (SIM/SINASC) ainda não entrou; o script em R mostra como incluí-la com `microdatasus`.
+- A mortalidade infantil é instável em municípios pequenos: somamos 2022 e 2023 e aplicamos suavização bayesiana empírica em direção à taxa do estado (a taxa bruta fica em `tmi_bruta`).
+- O esgoto continua do Censo 2022: o SINISA não tem 2.265 municípios e conta só a rede coletora.
 - O IDEB falta em 251 municípios; foi usada a mediana do estado (no DF, a da região).
 - Os custos por unidade de déficit no modelo (R$ 300, 250, 900 e 500) são hipóteses para comparar cenários, não estimativas orçamentárias.
 - A silhueta do k-means é baixa (0,17): as necessidades variam de forma contínua e os perfis são faixas desse contínuo.

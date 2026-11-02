@@ -11,7 +11,7 @@ b['cod'] = b.cod.astype(int)
 
 # indicador -> (dimensão, sentido: +1 maior é melhor, -1 maior é pior)
 IND = {
-    'cob_esf': ('saude', 1), 'ubs_por_10k': ('saude', 1), 'distancia_hospital_proxy_km': ('saude', -1),
+    'tmi': ('saude', -1), 'cob_esf': ('saude', 1), 'ubs_por_10k': ('saude', 1), 'distancia_hospital_proxy_km': ('saude', -1),
     'alfab': ('educacao', 1), 'ideb_ai': ('educacao', 1),
     'agua_rede': ('saneamento', 1), 'esgoto_adeq': ('saneamento', 1), 'lixo_coleta': ('saneamento', 1),
     'renda_pc': ('renda', 1), 'emprego_1000': ('renda', 1), 'bf_cob': ('renda', -1),
@@ -38,7 +38,7 @@ dp = np.sqrt(((V - ideal) ** 2).sum(1)); dm = np.sqrt(((V - anti) ** 2).sum(1))
 b['topsis'] = 100 * dp / (dp + dm)                        # 100 = mais prioritário
 b['rank_topsis'] = b.topsis.rank(ascending=False, method='min').astype(int)
 
-# k-means sobre as necessidades padronizadas dos 11 indicadores
+# k-means sobre as necessidades padronizadas dos 12 indicadores
 Z = (X - X.mean(0)) / X.std(0)
 sel = []
 for k in range(3, 10):

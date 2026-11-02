@@ -224,7 +224,7 @@
     grupo: { t: 'cat' }, venc_22_2t: { t: 'venc' }, venc_26_1t: { t: 'venc' }, venc_26_2t: { t: 'venc' },
     topsis: { t: 'seq', dir: 1, f: F.d1 }, aloc: { t: 'seq', dir: 1, f: F.i, pre: 'R$ ' },
     nec_saude: { t: 'seq', dir: 1, f: F.d1 }, nec_educacao: { t: 'seq', dir: 1, f: F.d1 }, nec_saneamento: { t: 'seq', dir: 1, f: F.d1 }, nec_renda: { t: 'seq', dir: 1, f: F.d1 },
-    cob_esf: { t: 'seq', dir: -1, f: F.d1, suf: '%' }, ubs_10k: { t: 'seq', dir: -1, f: F.d2 }, alfab: { t: 'seq', dir: -1, f: F.d1, suf: '%' }, ideb_ai: { t: 'seq', dir: -1, f: F.d1 },
+    tmi: { t: 'seq', dir: 1, f: F.d1, suf: '‰' }, cob_esf: { t: 'seq', dir: -1, f: F.d1, suf: '%' }, ubs_10k: { t: 'seq', dir: -1, f: F.d2 }, alfab: { t: 'seq', dir: -1, f: F.d1, suf: '%' }, ideb_ai: { t: 'seq', dir: -1, f: F.d1 },
     agua_rede: { t: 'seq', dir: -1, f: F.d1, suf: '%' }, esgoto_adeq: { t: 'seq', dir: -1, f: F.d1, suf: '%' }, lixo_coleta: { t: 'seq', dir: -1, f: F.d1, suf: '%' },
     renda_pc: { t: 'seq', dir: -1, f: F.i, pre: 'R$ ' }, emprego_1000: { t: 'seq', dir: -1, f: F.d1 }, bf_cob: { t: 'seq', dir: 1, f: F.d1, suf: '%' },
     lula_22_2t: { t: 'div', mid: 50, f: F.d1, suf: '%' }, lula_26_2t: { t: 'div', mid: 50, f: F.d1, suf: '%' }, var_lula: { t: 'div', mid: 0, f: F.d1, suf: ' p.p.' },
@@ -363,9 +363,9 @@
           ['Alocação simulada', al ? 'R$ ' + F.d2(al.get(m.cod)) + ' por habitante' : 's/d']]),
       h('h4', { text: 'Necessidade por dimensão (0 = melhor, 100 = pior)' }), needs,
       h('h4', { text: 'Indicadores' }),
-      dl([['Cobertura Saúde da Família', F.d1(m.cob_esf) + '%'], ['UBS por 10 mil hab.', F.d2(m.ubs_10k)], ['Distância ao hospital', F.d1(m.dist_hospital_km) + ' km'],
+      dl([['Mortalidade infantil 2022–23', F.d1(m.tmi) + ' por mil (bruta ' + F.d1(m.tmi_bruta) + '; ' + F.i(m.nascidos) + ' nascidos)'], ['Cobertura Saúde da Família', F.d1(m.cob_esf) + '%'], ['UBS por 10 mil hab.', F.d2(m.ubs_10k)], ['Distância ao hospital', F.d1(m.dist_hospital_km) + ' km'],
           ['Alfabetização 15+', F.d1(m.alfab) + '%'], ['IDEB anos iniciais', F.d1(m.ideb_ai) + (m.ideb_imputado ? ' (imputado)' : '')],
-          ['Água da rede geral', F.d1(m.agua_rede) + '%'], ['Esgoto adequado', F.d1(m.esgoto_adeq) + '%'], ['Coleta de lixo', F.d1(m.lixo_coleta) + '%'],
+          ['Água por rede (população)', F.d1(m.agua_rede) + '%' + (m.agua_fonte === 'Censo 2022' ? ' (Censo)' : '')], ['Esgoto adequado', F.d1(m.esgoto_adeq) + '%'], ['Coleta de lixo', F.d1(m.lixo_coleta) + '%'],
           ['Renda per capita', 'R$ ' + F.i(m.renda_pc)], ['Empregos formais/mil hab.', F.d1(m.emprego_1000)], ['Domicílios no Bolsa Família', F.d1(m.bf_cob) + '%'], ['PIB per capita 2023', 'R$ ' + F.i(m.pib_pc)]]),
       h('h4', { text: 'Eleição presidencial (votos válidos)' }),
       dl([['2022, 1º turno', 'Lula ' + F.d1(m.lula_22_1t) + '% · J. Bolsonaro ' + F.d1(m.bolsonaro_22_1t) + '%'], ['2022, 2º turno', 'Lula ' + F.d1(m.lula_22_2t) + '% · J. Bolsonaro ' + F.d1(m.bolsonaro_22_2t) + '%'],
@@ -443,7 +443,7 @@
 
   dash.draw('matriz', function (el) {
     var pf = rows('perfis'); el.replaceChildren(); if (!pf) return;
-    var C = [['municipios', F.i], ['pop_pct', F.d1], ['cob_esf', F.d1], ['ubs_por_10k', F.d1], ['alfab', F.d1], ['ideb_ai', F.d1], ['agua_rede', F.d1], ['esgoto_adeq', F.d1], ['lixo_coleta', F.d1], ['renda_pc', F.i], ['emprego_1000', F.d1], ['bf_cob', F.d1]];
+    var C = [['municipios', F.i], ['pop_pct', F.d1], ['tmi', F.d1], ['cob_esf', F.d1], ['ubs_por_10k', F.d1], ['alfab', F.d1], ['ideb_ai', F.d1], ['agua_rede', F.d1], ['esgoto_adeq', F.d1], ['lixo_coleta', F.d1], ['renda_pc', F.i], ['emprego_1000', F.d1], ['bf_cob', F.d1]];
     pf.forEach(function (p) {
       var tr = h('tr', { 'data-key': String(p.grupo) }, [h('td', {}, [h('span', { class: 'sw', style: 'background:' + col(p.grupo - 1) }), String(p.grupo)])]);
       C.forEach(function (c) { tr.appendChild(h('td', { class: 'n', text: c[1](p[c[0]]) })); });

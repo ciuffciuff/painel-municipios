@@ -117,7 +117,7 @@ fig.savefig(O + 'f8_dispersao.png', dpi=170, bbox_inches='tight'); plt.close(fig
 
 # ---------- correlações ----------
 V = [('nec_renda', 'Necessidade em renda'), ('bf_cob', 'Domicílios no Bolsa Família'), ('nec_educacao', 'Necessidade em educação'), ('topsis', 'Índice TOPSIS'),
-     ('nec_saneamento', 'Necessidade em saneamento'), ('cob_esf', 'Cobertura Saúde da Família'), ('esgoto_adeq', 'Esgoto adequado'), ('ideb_ai', 'IDEB anos iniciais'),
+     ('nec_saneamento', 'Necessidade em saneamento'), ('cob_esf', 'Cobertura Saúde da Família'), ('tmi', 'Mortalidade infantil'), ('esgoto_adeq', 'Esgoto adequado'), ('ideb_ai', 'IDEB anos iniciais'),
      ('nec_saude', 'Necessidade em saúde'), ('emprego_1000', 'Emprego formal/mil hab.'), ('renda_pc', 'Renda per capita'), ('alfab', 'Alfabetização 15+')]
 rr = [(lab, np.corrcoef(m[c], m.lula_26_2t)[0, 1]) for c, lab in V]; rr.sort(key=lambda t: t[1])
 fig, ax = plt.subplots(figsize=(7.2, 4.0))
@@ -137,3 +137,11 @@ ax.axvline(0, color='#555', lw=0.8); ax.set_xlim(-4.5, 3); ax.set_xlabel('Varia�
 ax.set_title('Lula cresceu nos grandes centros e caiu no interior')
 fig.savefig(O + 'f10_variacao.png', dpi=170, bbox_inches='tight'); plt.close(fig)
 print(sorted(os.listdir(O)))
+
+# ---------- mapa da mortalidade infantil ----------
+seqc = mc.LinearSegmentedColormap.from_list('t', ['#f3f4f6', '#c8382f'])
+nt = mc.Normalize(6, 22)
+def cb3(fig, ax):
+    sm = plt.cm.ScalarMappable(cmap=seqc, norm=nt); c = fig.colorbar(sm, ax=ax, orientation='horizontal', fraction=0.035, pad=0.01)
+    c.set_label('Óbitos de menores de 1 ano por mil nascidos vivos (2022–2023, suavizada)', fontsize=8)
+mapa({c: mc.to_hex(seqc(nt(min(v, 22)))) for c, v in byc.tmi.items()}, 'Mortalidade infantil por município, 2022–2023', 'f11_mapa_tmi.png', cbar=cb3)

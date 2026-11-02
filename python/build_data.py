@@ -92,6 +92,46 @@ for y, r in [(2022, 1), (2022, 2), (2026, 1), (2026, 2)]:
 el = el.reset_index()
 base = base.merge(el, on='cod', how='left')
 
+# ---- indicadores oficiais compilados no IDSC-BR 2025 (Instituto Cidades Sustentáveis) ----
+# Base: data/raw/Base_de_Dados_IDSC-BR_2025.xlsx do repositório clarabecker/idsc-analysis.
+IDSC = R + 'idsc-analysis/data/raw/Base_de_Dados_IDSC-BR_2025.xlsx'
+idsc = pd.read_excel(IDSC, 'Todos os Dados', usecols=['ID', 'SDG6_6_SERV_AG', 'SDG3_29_SF', 'SDG4_5_T_AN_15A'])
+idsc = idsc.rename(columns={'ID': 'cod'})
+base = base.merge(idsc, on='cod', how='left')
+# água: SINISA (população atendida com abastecimento, %); 48 municípios sem dado → Censo 2022 (domicílios com rede geral)
+base['agua_fonte'] = np.where(base.SDG6_6_SERV_AG.notna(), 'SINISA', 'Censo 2022')
+base['agua_rede'] = base.SDG6_6_SERV_AG.fillna(base.agua_rede)
+# Saúde da Família: cobertura oficial do e-Gestor (mar/2023), no lugar da estimativa por equipes do CNES
+base['cob_esf'] = base.SDG3_29_SF
+# alfabetização: 100 − analfabetismo de 15 anos ou mais (Censo 2022)
+base['alfab'] = 100 - base.SDG4_5_T_AN_15A
+base = base.drop(columns=['SDG6_6_SERV_AG', 'SDG3_29_SF', 'SDG4_5_T_AN_15A'])
+
+# ---- mortalidade infantil (SIM/SINASC), 2022 e 2023 somados ----
+# taxa anual do IDSC (série temporal, fonte DataSUS) × nascidos vivos do SINASC (OpenDataSUS) = óbitos;
+# depois soma de óbitos ÷ soma de nascidos × 1.000. Conferência: Brasil 2023 = 12,61 (DATASUS).
+st = pd.read_excel(IDSC, 'Séries Temporais', usecols=['ID', 'ANO', 'SDG3_15_T_M_INF'])
+st = st[st.ANO.isin([2022, 2023])].copy(); st['cod6'] = st.ID // 10
+nv = pd.read_csv(R + 'painel-epidemiologico-saude-materna/dados/tratados/fato_nascidos_municipio.csv')
+nv = nv.groupby(['ano', 'cod_mun_res']).qtd_nascidos.sum().reset_index().rename(columns={'ano': 'ANO', 'cod_mun_res': 'cod6'})
+st = st.merge(nv, on=['ANO', 'cod6'], how='left')
+st['obitos'] = (st.SDG3_15_T_M_INF * st.qtd_nascidos / 1000).round()
+tmi = st.groupby('ID').agg(obitos_inf=('obitos', 'sum'), nascidos=('qtd_nascidos', 'sum')).reset_index().rename(columns={'ID': 'cod'})
+tmi['tmi_bruta'] = 1000 * tmi.obitos_inf / tmi.nascidos
+# Suavização bayesiana empírica (Marshall, 1991) em direção à taxa do estado:
+# em municípios com poucos nascimentos, um único óbito muda muito a taxa bruta.
+tmi['uf'] = tmi.cod // 100000
+def eb(g):
+    r = g.obitos_inf / g.nascidos; n = g.nascidos
+    m = g.obitos_inf.sum() / n.sum()
+    s2 = max((n * (r - m) ** 2).sum() / n.sum() - m / n.mean(), 0)
+    A = s2 / (s2 + m / n)
+    return 1000 * (m + A * (r - m))
+tmi['tmi'] = tmi.groupby('uf', group_keys=False).apply(eb)
+tmi = tmi.drop(columns='uf')
+print('TMI Brasil 2022-2023:', round(1000 * tmi.obitos_inf.sum() / tmi.nascidos.sum(), 2))
+base = base.merge(tmi, on='cod', how='left')
+
 base = base.drop(columns=['cod6'])
 print(base.shape)
 print(base.isna().sum()[base.isna().sum() > 0])

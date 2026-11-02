@@ -11,7 +11,9 @@ for r in \
   TreferDG/analise-bolsa-familia \
   DanielNego/projeto-bi-pib-municipios \
   rafapolo/rais \
-  JeffAirData/brasil-eleicoes-para-presidente-2022-2026; do
+  JeffAirData/brasil-eleicoes-para-presidente-2022-2026 \
+  clarabecker/idsc-analysis \
+  liviasves/painel-epidemiologico-saude-materna; do
   d=${r#*/}
   [ -d "$d" ] || git clone --depth 1 "https://github.com/$r.git" "$d"
 done

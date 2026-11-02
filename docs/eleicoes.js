@@ -33,7 +33,7 @@
     description: 'Correlação de Pearson, entre os 5.570 municípios, de cada indicador com o % de Lula no 2º turno de 2026 e com a variação de Lula entre 2022 e 2026 (p.p.).',
     fn: function (municipios) {
       var V = [['topsis', 'Índice de prioridade (TOPSIS)'], ['nec_saude', 'Necessidade em saúde'], ['nec_educacao', 'Necessidade em educação'], ['nec_saneamento', 'Necessidade em saneamento'], ['nec_renda', 'Necessidade em renda'],
-               ['renda_pc', 'Renda per capita'], ['alfab', 'Alfabetização 15+'], ['bf_cob', 'Domicílios no Bolsa Família'], ['esgoto_adeq', 'Esgoto adequado'], ['ideb_ai', 'IDEB anos iniciais'], ['cob_esf', 'Cobertura Saúde da Família'], ['emprego_1000', 'Emprego formal/mil hab.']];
+               ['renda_pc', 'Renda per capita'], ['alfab', 'Alfabetização 15+'], ['bf_cob', 'Domicílios no Bolsa Família'], ['esgoto_adeq', 'Esgoto adequado'], ['ideb_ai', 'IDEB anos iniciais'], ['tmi', 'Mortalidade infantil'], ['cob_esf', 'Cobertura Saúde da Família'], ['emprego_1000', 'Emprego formal/mil hab.']];
       function r(xs, ys) {
         var n = xs.length, mx = 0, my = 0, i; for (i = 0; i < n; i++) { mx += xs[i]; my += ys[i]; } mx /= n; my /= n;
         var sxy = 0, sxx = 0, syy = 0; for (i = 0; i < n; i++) { var a = xs[i] - mx, b = ys[i] - my; sxy += a * b; sxx += a * a; syy += b * b; }
@@ -178,6 +178,7 @@
   txt('el-ra', corr('alfab'), 'eleicao_corr');
   txt('el-rb', corr('bf_cob'), 'eleicao_corr');
   txt('el-rs', corr('nec_saude'), 'eleicao_corr');
+  txt('el-rt', corr('tmi'), 'eleicao_corr');
   txt('el-q1', function (r) { return F.d1(r[0].lula_26_2t); }, 'eleicao_quintil');
   txt('el-q5', function (r) { return F.d1(r[4].lula_26_2t); }, 'eleicao_quintil');
   txt('el-vt', function (r) { return sinal(r[0].variacao_total); }, 'eleicao_resumo');
