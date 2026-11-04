@@ -22,7 +22,7 @@ const kids = [
   H('Use of generative artificial intelligence'),
   P('Claude Opus 5.5 (Anthropic) was used to write and debug data-collection and analysis code, to run exploratory analyses under the author’s direction and to assist with drafting and translating the manuscript. The author defined the research questions and methods, checked the code, results and references, and takes full responsibility for the content. This use is also described in Section 3.5 of the manuscript.'),
   H('Data availability'),
-  P('All data come from official open sources (IBGE, DATASUS, INEP, TSE and CGU). The collection scripts, processed database and analysis code are kept in a version-controlled repository, which will be made public with a persistent identifier [e.g., Harvard Dataverse DOI] upon acceptance. A private link can be provided to reviewers on request. The Open Science Compliance Form is submitted with the manuscript.'),
+  P('All data come from official open sources (IBGE, DATASUS, INEP, TSE and CGU) and are cited in the reference list. In line with BAR\u2019s policy, the processed municipal database, the collection and analysis scripts and the allocation model were deposited in Zenodo [DOI]. The link is not included in the manuscript to preserve blind review and is given in the Open Science Compliance Form submitted with this letter.'),
   H('Acknowledgments'),
   P('[Acknowledgments, if any. They appear only in this letter to preserve blind review.]'),
   H('Funding and conflicts of interest'),
